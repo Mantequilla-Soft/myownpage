@@ -1,0 +1,1386 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Builder - Admin Panel</title>
+    <link href="https://unpkg.com/grapesjs@0.21.13/dist/css/grapes.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+
+        .toolbar {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 999;
+            height: 50px;
+        }
+        .toolbar-left { display: flex; gap: 15px; align-items: center; }
+        .toolbar h1 { font-size: 18px; }
+        .page-name { color: #ecf0f1; font-size: 14px; }
+        .toolbar-right { display: flex; gap: 10px; align-items: center; }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            color: white;
+        }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #229954; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-warning { background: #e67e22; }
+        .btn-warning:hover { background: #d35400; }
+
+        .status { font-size: 13px; }
+        .status-saving { color: #f39c12; }
+        .status-saved { color: #2ecc71; }
+        .status-error { color: #e74c3c; }
+
+        /* Main layout: left sidebar | canvas | right sidebar */
+        .editor-wrap {
+            display: flex;
+            height: calc(100vh - 50px);
+        }
+
+        /* LEFT SIDEBAR - Blocks */
+        .left-sidebar {
+            width: 260px;
+            min-width: 260px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            overflow-y: auto;
+            border-right: 1px solid #1a252f;
+        }
+        .left-sidebar h3 {
+            padding: 14px 16px 8px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #7f8c8d;
+            border-top: 1px solid #34495e;
+        }
+        .left-sidebar h3:first-child { border-top: none; }
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            padding: 8px 12px 16px;
+        }
+        .block-item {
+            background: #34495e;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: grab;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .block-item:hover {
+            background: #3d566e;
+            border-color: #3498db;
+        }
+        .block-item:active { cursor: grabbing; }
+        .block-item svg {
+            display: block;
+            margin: 0 auto 6px;
+            color: #bdc3c7;
+        }
+        .block-item span {
+            font-size: 11px;
+            color: #bdc3c7;
+            display: block;
+        }
+
+        /* RIGHT SIDEBAR - Style manager & layers */
+        .right-sidebar {
+            width: 280px;
+            min-width: 280px;
+            background: #2c3e50;
+            color: #ecf0f1;
+            overflow-y: auto;
+            border-left: 1px solid #1a252f;
+        }
+        .right-tabs {
+            display: flex;
+            border-bottom: 2px solid #34495e;
+        }
+        .right-tab {
+            flex: 1;
+            padding: 12px 8px;
+            text-align: center;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #7f8c8d;
+            background: none;
+            border: none;
+            transition: all 0.2s;
+        }
+        .right-tab:hover { color: #bdc3c7; }
+        .right-tab.active {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+            margin-bottom: -2px;
+        }
+        .right-panel {
+            display: none;
+            padding: 16px;
+        }
+        .right-panel.active { display: block; }
+
+        /* Style editor sections */
+        .style-section {
+            margin-bottom: 20px;
+        }
+        .style-section-title {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px solid #34495e;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .style-section-title:after {
+            content: '\25BC';
+            font-size: 8px;
+        }
+        .style-section.collapsed .style-section-body { display: none; }
+        .style-section.collapsed .style-section-title:after { content: '\25B6'; }
+        .style-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        .style-row label {
+            width: 90px;
+            font-size: 12px;
+            color: #95a5a6;
+            flex-shrink: 0;
+        }
+        .style-row input, .style-row select {
+            flex: 1;
+            padding: 6px 8px;
+            background: #34495e;
+            border: 1px solid #4a6278;
+            border-radius: 4px;
+            color: #ecf0f1;
+            font-size: 12px;
+        }
+        .style-row input[type="color"] {
+            width: 36px;
+            height: 30px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .color-group {
+            display: flex;
+            gap: 6px;
+            flex: 1;
+        }
+        .color-group input[type="text"] { flex: 1; }
+
+        /* Canvas */
+        #gjs {
+            flex: 1;
+            overflow: hidden;
+        }
+        .gjs-cv-canvas { background: #e8e8e8; }
+
+        /* No selection message */
+        .no-selection {
+            text-align: center;
+            padding: 30px 16px;
+            color: #7f8c8d;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        /* Layers tree */
+        .layer-item {
+            padding: 8px 12px;
+            border-bottom: 1px solid #34495e;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .layer-item:hover { background: #34495e; }
+        .layer-item.selected { background: #2980b9; }
+        .layer-indent { padding-left: 20px; }
+        .layer-tag {
+            color: #3498db;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
+        /* GrapesJS overrides - hide default panels since we build our own */
+        .gjs-pn-panels { display: none !important; }
+        .gjs-cv-canvas {
+            width: 100% !important;
+            height: 100% !important;
+            top: 0 !important;
+            left: 0 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <h1>Page Builder</h1>
+            <span class="page-name" id="pageName">Loading...</span>
+            <span class="status" id="status"></span>
+        </div>
+        <div class="toolbar-right">
+            <button onclick="savePage(false)" class="btn btn-warning">Save</button>
+            <button onclick="savePage(true)" class="btn btn-success">Save &amp; Exit</button>
+            <a href="/admin/dashboard" class="btn btn-secondary">&larr; Dashboard</a>
+        </div>
+    </div>
+
+    <div class="editor-wrap">
+        <!-- LEFT SIDEBAR: Blocks to drag onto the page -->
+        <div class="left-sidebar" id="leftSidebar">
+            <h3>Sections</h3>
+            <div class="blocks-grid" id="sectionBlocks"></div>
+
+            <h3>Layout</h3>
+            <div class="blocks-grid" id="layoutBlocks"></div>
+
+            <h3>Elements</h3>
+            <div class="blocks-grid" id="elementBlocks"></div>
+
+            <h3>Basic</h3>
+            <div class="blocks-grid" id="basicBlocks"></div>
+
+            <h3>Hive Blockchain</h3>
+            <div class="blocks-grid" id="hiveBlocks"></div>
+        </div>
+
+        <!-- CANVAS: The page being built -->
+        <div id="gjs"></div>
+
+        <!-- RIGHT SIDEBAR: Style & Layers -->
+        <div class="right-sidebar">
+            <div class="right-tabs">
+                <button class="right-tab active" onclick="switchRightTab('styles')">Styles</button>
+                <button class="right-tab" onclick="switchRightTab('layers')">Layers</button>
+            </div>
+
+            <div class="right-panel active" id="panel-styles">
+                <div class="no-selection" id="noSelection">
+                    Click on any element in the canvas to style it.
+                    <br><br>
+                    Drag blocks from the left sidebar onto the canvas to build your page.
+                </div>
+                <div id="styleEditor" style="display:none;">
+                    <!-- Properties (href, src, alt, etc.) -->
+                    <div class="style-section" id="propsSection" style="display:none;">
+                        <div class="style-section-title" onclick="toggleSection(this)">Properties</div>
+                        <div class="style-section-body" id="propsBody"></div>
+                    </div>
+
+                    <!-- Background -->
+                    <div class="style-section">
+                        <div class="style-section-title" onclick="toggleSection(this)">Background</div>
+                        <div class="style-section-body">
+                            <div class="style-row">
+                                <label>Color</label>
+                                <div class="color-group">
+                                    <input type="color" id="bgColor" value="#ffffff" onchange="applyStyle('background-color', this.value)">
+                                    <input type="text" id="bgColorText" placeholder="#ffffff" onchange="applyStyle('background-color', this.value); document.getElementById('bgColor').value = this.value;">
+                                </div>
+                            </div>
+                            <div class="style-row">
+                                <label>Image</label>
+                                <button class="btn btn-secondary" style="font-size:12px; padding:6px 12px;" onclick="openBgImagePicker()">Choose Image</button>
+                            </div>
+                            <div class="style-row">
+                                <label>Size</label>
+                                <select onchange="applyStyle('background-size', this.value)">
+                                    <option value="">--</option>
+                                    <option value="cover">Cover</option>
+                                    <option value="contain">Contain</option>
+                                    <option value="auto">Auto</option>
+                                    <option value="100% 100%">Stretch</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Position</label>
+                                <select onchange="applyStyle('background-position', this.value)">
+                                    <option value="">--</option>
+                                    <option value="center center">Center</option>
+                                    <option value="top center">Top</option>
+                                    <option value="bottom center">Bottom</option>
+                                    <option value="left center">Left</option>
+                                    <option value="right center">Right</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Repeat</label>
+                                <select onchange="applyStyle('background-repeat', this.value)">
+                                    <option value="">--</option>
+                                    <option value="no-repeat">No Repeat</option>
+                                    <option value="repeat">Repeat</option>
+                                    <option value="repeat-x">Repeat X</option>
+                                    <option value="repeat-y">Repeat Y</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Size & Spacing -->
+                    <div class="style-section">
+                        <div class="style-section-title" onclick="toggleSection(this)">Size & Spacing</div>
+                        <div class="style-section-body">
+                            <div class="style-row">
+                                <label>Width</label>
+                                <input type="text" placeholder="e.g. 100%, 500px" onchange="applyStyle('width', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Height</label>
+                                <input type="text" placeholder="e.g. auto, 400px" onchange="applyStyle('height', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Min Height</label>
+                                <input type="text" placeholder="e.g. 300px" onchange="applyStyle('min-height', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Padding</label>
+                                <input type="text" placeholder="e.g. 20px, 10px 20px" onchange="applyStyle('padding', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Margin</label>
+                                <input type="text" placeholder="e.g. 0 auto, 20px" onchange="applyStyle('margin', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Typography -->
+                    <div class="style-section">
+                        <div class="style-section-title" onclick="toggleSection(this)">Typography</div>
+                        <div class="style-section-body">
+                            <div class="style-row">
+                                <label>Font Size</label>
+                                <input type="text" placeholder="e.g. 16px, 2em" onchange="applyStyle('font-size', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Font Weight</label>
+                                <select onchange="applyStyle('font-weight', this.value)">
+                                    <option value="">--</option>
+                                    <option value="300">Light</option>
+                                    <option value="400">Normal</option>
+                                    <option value="500">Medium</option>
+                                    <option value="600">Semi Bold</option>
+                                    <option value="700">Bold</option>
+                                    <option value="800">Extra Bold</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Text Color</label>
+                                <div class="color-group">
+                                    <input type="color" id="textColor" value="#333333" onchange="applyStyle('color', this.value)">
+                                    <input type="text" placeholder="#333" onchange="applyStyle('color', this.value)">
+                                </div>
+                            </div>
+                            <div class="style-row">
+                                <label>Align</label>
+                                <select onchange="applyStyle('text-align', this.value)">
+                                    <option value="">--</option>
+                                    <option value="left">Left</option>
+                                    <option value="center">Center</option>
+                                    <option value="right">Right</option>
+                                    <option value="justify">Justify</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Line Height</label>
+                                <input type="text" placeholder="e.g. 1.5, 24px" onchange="applyStyle('line-height', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Layout -->
+                    <div class="style-section collapsed">
+                        <div class="style-section-title" onclick="toggleSection(this)">Layout</div>
+                        <div class="style-section-body">
+                            <div class="style-row">
+                                <label>Display</label>
+                                <select onchange="applyStyle('display', this.value)">
+                                    <option value="">--</option>
+                                    <option value="block">Block</option>
+                                    <option value="flex">Flex</option>
+                                    <option value="grid">Grid</option>
+                                    <option value="inline-block">Inline Block</option>
+                                    <option value="none">Hidden</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Direction</label>
+                                <select onchange="applyStyle('flex-direction', this.value)">
+                                    <option value="">--</option>
+                                    <option value="row">Row</option>
+                                    <option value="column">Column</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Justify</label>
+                                <select onchange="applyStyle('justify-content', this.value)">
+                                    <option value="">--</option>
+                                    <option value="flex-start">Start</option>
+                                    <option value="center">Center</option>
+                                    <option value="flex-end">End</option>
+                                    <option value="space-between">Space Between</option>
+                                    <option value="space-around">Space Around</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Align</label>
+                                <select onchange="applyStyle('align-items', this.value)">
+                                    <option value="">--</option>
+                                    <option value="flex-start">Start</option>
+                                    <option value="center">Center</option>
+                                    <option value="flex-end">End</option>
+                                    <option value="stretch">Stretch</option>
+                                </select>
+                            </div>
+                            <div class="style-row">
+                                <label>Gap</label>
+                                <input type="text" placeholder="e.g. 20px" onchange="applyStyle('gap', this.value)">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Borders -->
+                    <div class="style-section collapsed">
+                        <div class="style-section-title" onclick="toggleSection(this)">Borders & Shadows</div>
+                        <div class="style-section-body">
+                            <div class="style-row">
+                                <label>Radius</label>
+                                <input type="text" placeholder="e.g. 8px, 50%" onchange="applyStyle('border-radius', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Border</label>
+                                <input type="text" placeholder="e.g. 1px solid #ddd" onchange="applyStyle('border', this.value)">
+                            </div>
+                            <div class="style-row">
+                                <label>Shadow</label>
+                                <input type="text" placeholder="e.g. 0 2px 8px rgba(0,0,0,0.1)" onchange="applyStyle('box-shadow', this.value)">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel" id="panel-layers">
+                <div id="layersContainer">
+                    <p style="color:#7f8c8d; font-size:13px; padding:10px;">Page structure will appear here.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background image picker modal -->
+    <div id="bgImageModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.7); z-index:10000; align-items:center; justify-content:center;">
+        <div style="background:white; border-radius:12px; max-width:700px; width:90%; max-height:80vh; display:flex; flex-direction:column;">
+            <div style="padding:16px 20px; border-bottom:1px solid #e0e0e0; display:flex; justify-content:space-between; align-items:center;">
+                <h3 style="color:#333;">Choose Background Image</h3>
+                <button onclick="closeBgImageModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#666;">&times;</button>
+            </div>
+            <div style="padding:20px; overflow-y:auto; flex:1;">
+                <div style="border:2px dashed #ccc; border-radius:8px; padding:16px; text-align:center; margin-bottom:16px; cursor:pointer;" onclick="document.getElementById('bgFileInput').click()">
+                    <strong>Click to upload an image</strong>
+                    <input type="file" id="bgFileInput" accept="image/*" style="display:none" onchange="uploadBgImage(this.files)">
+                </div>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(120px, 1fr)); gap:10px;" id="bgImageGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/grapesjs@0.21.13"></script>
+    <script src="https://unpkg.com/grapesjs-blocks-basic@1.0.2"></script>
+
+    <script>
+        var urlParams = new URLSearchParams(window.location.search);
+        var pagePath = urlParams.get('page');
+
+        if (!pagePath) {
+            alert('No page specified');
+            window.location.href = '/admin/dashboard';
+        }
+
+        document.getElementById('pageName').textContent = pagePath;
+
+        var hasUnsavedChanges = false;
+        var isSaving = false;
+        var pageBodyAttrs = '';
+
+        // Initialize GrapesJS with minimal UI (we build our own panels)
+        var editor = grapesjs.init({
+            container: '#gjs',
+            height: '100%',
+            width: 'auto',
+            fromElement: false,
+            storageManager: false,
+            plugins: ['gjs-blocks-basic'],
+            pluginsOpts: {
+                'gjs-blocks-basic': {
+                    flexGrid: true
+                }
+            },
+            canvas: {
+                styles: ['/css/styles.css']
+            },
+            panels: { defaults: [] },
+            assetManager: {
+                upload: '/admin/api/upload',
+                uploadName: 'files',
+                multiUpload: true,
+                autoAdd: true,
+                assets: []
+            }
+        });
+
+        // ==================== REGISTER HIVE COMPONENTS ====================
+        // Tell GrapesJS how to handle Hive custom elements
+        ['hive-blog', 'hive-post', 'hive-post-header', 'hive-post-content', 'hive-post-footer', 'hive-comments', 'hive-witness', 'hive-tag'].forEach(function(tagName) {
+            editor.DomComponents.addType(tagName, {
+                isComponent: function(el) {
+                    if (el.tagName && el.tagName.toLowerCase() === tagName) {
+                        return { type: tagName };
+                    }
+                },
+                model: {
+                    defaults: {
+                        tagName: tagName,
+                        draggable: true,
+                        droppable: false,
+                        editable: false,
+                        void: false
+                    }
+                },
+                view: {
+                    onRender: function() {
+                        var el = this.el;
+                        el.style.minHeight = '60px';
+                        el.style.border = '2px dashed #e74c3c';
+                        el.style.borderRadius = '8px';
+                        el.style.display = 'flex';
+                        el.style.alignItems = 'center';
+                        el.style.justifyContent = 'center';
+                        el.style.padding = '20px';
+                        el.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+                        el.style.color = '#e74c3c';
+                        el.style.fontFamily = 'monospace';
+                        el.style.fontSize = '14px';
+                        var attrs = this.model.getAttributes();
+                        var info = tagName;
+                        if (attrs.permlink) info += ' — ' + attrs.permlink;
+                        else if (attrs.account) info += ' — @' + attrs.account;
+                        else if (attrs.tag) info += ' — #' + attrs.tag;
+                        el.innerHTML = '<div style="text-align:center;"><div style="font-size:24px; margin-bottom:8px;">&#x2B21;</div><div>&lt;' + info + '&gt;</div><div style="font-size:11px; color:#888; margin-top:4px;">Renders live on the published page</div></div>';
+                    }
+                }
+            });
+        });
+
+        // ==================== BLOCK DEFINITIONS ====================
+
+        var blockDefs = {
+            sections: [
+                {
+                    id: 'hero-banner',
+                    label: 'Hero Banner',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="3" width="22" height="18" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="5" y1="9" x2="19" y2="9" stroke="currentColor" stroke-width="2"/><line x1="7" y1="13" x2="17" y2="13" stroke="currentColor" stroke-width="1"/><line x1="9" y1="16" x2="15" y2="16" stroke="currentColor" stroke-width="1"/></svg>',
+                    content: '<section style="min-height:400px; display:flex; align-items:center; justify-content:center; text-align:center; background-color:#2c3e50; background-size:cover; background-position:center; padding:60px 20px;"><div style="max-width:800px;"><h1 style="color:white; font-size:48px; margin-bottom:20px;">Your Heading</h1><p style="color:#ecf0f1; font-size:20px; margin-bottom:30px;">Your subtitle or description text goes here.</p><a href="#" style="display:inline-block; padding:15px 40px; background:#3498db; color:white; text-decoration:none; border-radius:5px; font-size:18px;">Call to Action</a></div></section>'
+                },
+                {
+                    id: 'text-section',
+                    label: 'Text Block',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/><line x1="3" y1="10" x2="18" y2="10" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="14" x2="21" y2="14" stroke="currentColor" stroke-width="1"/><line x1="3" y1="18" x2="15" y2="18" stroke="currentColor" stroke-width="1"/></svg>',
+                    content: '<section style="padding:60px 20px; max-width:900px; margin:0 auto;"><h2 style="font-size:32px; margin-bottom:20px;">Section Title</h2><p style="font-size:18px; line-height:1.6; color:#555;">Write your content here. Click to edit this text.</p></section>'
+                },
+                {
+                    id: 'image-banner',
+                    label: 'Image Banner',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/><polyline points="22,16 16,10 6,20" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<section style="position:relative; min-height:300px; overflow:hidden;"><img src="https://placehold.co/1200x400/2c3e50/white?text=Click+to+change+image" style="width:100%; height:300px; object-fit:cover; display:block;" /></section>'
+                },
+                {
+                    id: 'image-text',
+                    label: 'Image + Text',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="3" width="10" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="6" x2="23" y2="6" stroke="currentColor" stroke-width="2"/><line x1="14" y1="10" x2="22" y2="10" stroke="currentColor" stroke-width="1"/><line x1="14" y1="14" x2="20" y2="14" stroke="currentColor" stroke-width="1"/></svg>',
+                    content: '<section style="display:flex; gap:40px; padding:60px 20px; max-width:1100px; margin:0 auto; align-items:center; flex-wrap:wrap;"><div style="flex:1; min-width:280px;"><img src="https://placehold.co/500x400/eee/999?text=Your+Image" style="width:100%; border-radius:8px;" /></div><div style="flex:1; min-width:280px;"><h2 style="font-size:28px; margin-bottom:15px;">About This</h2><p style="font-size:16px; line-height:1.6; color:#555;">Describe your work, tell your story, or share details about a project.</p><a href="#" style="display:inline-block; margin-top:20px; padding:12px 30px; background:#2c3e50; color:white; text-decoration:none; border-radius:5px;">Learn More</a></div></section>'
+                },
+                {
+                    id: 'image-gallery',
+                    label: 'Gallery',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="1" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="1" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="13" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="13" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<section style="padding:40px 20px; max-width:1100px; margin:0 auto;"><h2 style="text-align:center; margin-bottom:30px;">Gallery</h2><div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(250px, 1fr)); gap:15px;"><img src="https://placehold.co/400x300/eee/999?text=Image+1" style="width:100%; border-radius:6px;" /><img src="https://placehold.co/400x300/eee/999?text=Image+2" style="width:100%; border-radius:6px;" /><img src="https://placehold.co/400x300/eee/999?text=Image+3" style="width:100%; border-radius:6px;" /><img src="https://placehold.co/400x300/eee/999?text=Image+4" style="width:100%; border-radius:6px;" /></div></section>'
+                }
+            ],
+            layout: [
+                {
+                    id: 'two-columns',
+                    label: '2 Columns',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="3" width="10" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="3" width="10" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<div style="display:flex; gap:30px; padding:40px 20px; max-width:1100px; margin:0 auto; flex-wrap:wrap;"><div style="flex:1; min-width:280px;"><h3 style="margin-bottom:10px;">Column 1</h3><p>Content for the first column.</p></div><div style="flex:1; min-width:280px;"><h3 style="margin-bottom:10px;">Column 2</h3><p>Content for the second column.</p></div></div>'
+                },
+                {
+                    id: 'three-columns',
+                    label: '3 Columns',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="3" width="6" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="3" width="6" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="17" y="3" width="6" height="18" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<div style="display:flex; gap:20px; padding:40px 20px; max-width:1100px; margin:0 auto; flex-wrap:wrap;"><div style="flex:1; min-width:200px;"><h3 style="margin-bottom:10px;">Column 1</h3><p>Content here.</p></div><div style="flex:1; min-width:200px;"><h3 style="margin-bottom:10px;">Column 2</h3><p>Content here.</p></div><div style="flex:1; min-width:200px;"><h3 style="margin-bottom:10px;">Column 3</h3><p>Content here.</p></div></div>'
+                },
+                {
+                    id: 'bento-grid',
+                    label: 'Bento Grid',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="1" y="1" width="10" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="1" width="10" height="5" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="13" y="8" width="10" height="3" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="1" y="13" width="6" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9" y="13" width="14" height="10" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<div style="display:grid; grid-template-columns:repeat(3, 1fr); grid-template-rows:auto auto; gap:16px; padding:40px 20px; max-width:1100px; margin:0 auto;">' +
+                        '<div style="grid-column:1/2; grid-row:1/3; background:#f0f0f0; border-radius:12px; padding:30px; min-height:300px;"><h3>Featured</h3><p>Your main content here.</p></div>' +
+                        '<div style="background:#f0f0f0; border-radius:12px; padding:30px;"><h4>Item 1</h4><p>Content</p></div>' +
+                        '<div style="background:#f0f0f0; border-radius:12px; padding:30px;"><h4>Item 2</h4><p>Content</p></div>' +
+                        '<div style="grid-column:2/4; background:#f0f0f0; border-radius:12px; padding:30px;"><h4>Wide Item</h4><p>Content spanning two columns</p></div>' +
+                        '</div>'
+                }
+            ],
+            elements: [
+                {
+                    id: 'button-link',
+                    label: 'Button',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="7" width="20" height="10" rx="3" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="7" y1="12" x2="17" y2="12" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<a href="#" style="display:inline-block; padding:12px 30px; background:#3498db; color:white; text-decoration:none; border-radius:5px; font-size:16px; font-weight:500;">Button Text</a>'
+                },
+                {
+                    id: 'single-image',
+                    label: 'Image',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="8" cy="10" r="2" fill="currentColor"/></svg>',
+                    content: '<img src="https://placehold.co/600x400/eee/999?text=Your+Image" style="max-width:100%; border-radius:8px;" />'
+                },
+                {
+                    id: 'heading',
+                    label: 'Heading',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><text x="3" y="18" font-size="18" font-weight="bold" fill="currentColor">H</text></svg>',
+                    content: '<h2 style="font-size:32px; margin-bottom:10px;">Your Heading</h2>'
+                },
+                {
+                    id: 'paragraph',
+                    label: 'Paragraph',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><line x1="3" y1="7" x2="21" y2="7" stroke="currentColor" stroke-width="1.5"/><line x1="3" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="1"/><line x1="3" y1="17" x2="15" y2="17" stroke="currentColor" stroke-width="1"/></svg>',
+                    content: '<p style="font-size:16px; line-height:1.6; color:#555;">Your paragraph text goes here. Click to edit.</p>'
+                },
+                {
+                    id: 'divider',
+                    label: 'Divider',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/></svg>',
+                    content: '<hr style="border:none; border-top:1px solid #ddd; margin:30px auto; max-width:900px;">'
+                },
+                {
+                    id: 'spacer',
+                    label: 'Spacer',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><line x1="12" y1="4" x2="12" y2="20" stroke="currentColor" stroke-width="1" stroke-dasharray="3,3"/><line x1="4" y1="4" x2="20" y2="4" stroke="currentColor" stroke-width="1.5"/><line x1="4" y1="20" x2="20" y2="20" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<div style="height:60px;"></div>'
+                },
+                {
+                    id: 'link',
+                    label: 'Link',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: '<a href="#" style="color:#3498db; text-decoration:underline; font-size:16px;">Link text</a>'
+                }
+            ]
+        };
+
+        // ==================== BUILD LEFT SIDEBAR BLOCKS ====================
+
+        function buildBlocksUI() {
+            renderBlocks('sectionBlocks', blockDefs.sections);
+            renderBlocks('layoutBlocks', blockDefs.layout);
+            renderBlocks('elementBlocks', blockDefs.elements);
+
+            // Also show GrapesJS basic blocks
+            var basicGrid = document.getElementById('basicBlocks');
+            var basics = [
+                { label: 'Text', icon: 'T', content: '<div>Insert your text here</div>' },
+                { label: 'Map', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>', content: '<iframe src="https://maps.google.com/maps?q=New+York&output=embed" style="width:100%; height:300px; border:0;"></iframe>' },
+                { label: 'Video', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>', content: '<div style="position:relative; padding-bottom:56.25%; height:0;"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe></div>' }
+            ];
+            basics.forEach(function(b) {
+                var el = document.createElement('div');
+                el.className = 'block-item';
+                el.innerHTML = (b.icon.length < 4 ? '<div style="font-size:24px; font-weight:bold; margin-bottom:4px; color:#bdc3c7;">' + b.icon + '</div>' : b.icon) + '<span>' + b.label + '</span>';
+                el.draggable = true;
+                el.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/html', b.content);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+                el.addEventListener('click', function() {
+                    editor.addComponents(b.content);
+                    hasUnsavedChanges = true;
+                });
+                basicGrid.appendChild(el);
+            });
+
+            // Hive blockchain blocks
+            var hiveSvg = '<svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.18L18.39 7.5 12 10.82 5.61 7.5 12 4.18zM5 9.06l6 3.33v6.55L5 15.61V9.06zm8 9.88v-6.55l6-3.33v6.55l-6 3.33z" fill="currentColor"/></svg>';
+            var hiveBlocks = [
+                { label: 'Blog Feed', icon: hiveSvg, content: '<hive-blog account="gtg" posts-per-page="5" theme="auto"></hive-blog>' },
+                { label: 'Post', icon: hiveSvg, content: '<hive-post permlink="@gtg/hello-world" theme="auto"></hive-post>' },
+                { label: 'Comments', icon: hiveSvg, content: '<hive-comments permlink="@gtg/hello-world" theme="auto"></hive-comments>' },
+                { label: 'Witness', icon: hiveSvg, content: '<hive-witness account="gtg" theme="auto"></hive-witness>' },
+                { label: 'Tag Feed', icon: hiveSvg, content: '<hive-tag tag="photography" posts-per-page="4" theme="auto"></hive-tag>' },
+                { label: 'Post Header', icon: hiveSvg, content: '<hive-post-header permlink="@gtg/hello-world" theme="auto"></hive-post-header>' },
+                { label: 'Post Content', icon: hiveSvg, content: '<hive-post-content permlink="@gtg/hello-world" theme="auto"></hive-post-content>' },
+                { label: 'Post Footer', icon: hiveSvg, content: '<hive-post-footer permlink="@gtg/hello-world" theme="auto"></hive-post-footer>' }
+            ];
+            var hiveGrid = document.getElementById('hiveBlocks');
+            hiveBlocks.forEach(function(b) {
+                var el = document.createElement('div');
+                el.className = 'block-item';
+                el.innerHTML = b.icon + '<span>' + b.label + '</span>';
+                el.draggable = true;
+                el.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/html', b.content);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+                el.addEventListener('click', function() {
+                    editor.addComponents(b.content);
+                    hasUnsavedChanges = true;
+                });
+                hiveGrid.appendChild(el);
+            });
+        }
+
+        function renderBlocks(containerId, blocks) {
+            var container = document.getElementById(containerId);
+            blocks.forEach(function(block) {
+                // Register in GrapesJS block manager
+                editor.BlockManager.add(block.id, {
+                    label: block.label,
+                    content: block.content,
+                    category: 'Custom'
+                });
+
+                // Build the visual block in sidebar
+                var el = document.createElement('div');
+                el.className = 'block-item';
+                el.innerHTML = block.icon + '<span>' + block.label + '</span>';
+                el.draggable = true;
+
+                // Drag support
+                el.addEventListener('dragstart', function(e) {
+                    e.dataTransfer.setData('text/html', block.content);
+                    e.dataTransfer.effectAllowed = 'copy';
+                });
+
+                // Click to append
+                el.addEventListener('click', function() {
+                    editor.addComponents(block.content);
+                    hasUnsavedChanges = true;
+                });
+
+                container.appendChild(el);
+            });
+        }
+
+        buildBlocksUI();
+
+        // ==================== DOUBLE-CLICK TO EDIT TEXT ====================
+
+        // Make all text-containing elements editable on double-click
+        editor.on('component:add', function(component) {
+            enableInlineEditing(component);
+        });
+
+        // Also enable for components loaded from saved page
+        editor.on('load', function() {
+            editor.getWrapper().onAll(function(comp) {
+                enableInlineEditing(comp);
+            });
+        });
+
+        function enableInlineEditing(component) {
+            var tag = (component.get('tagName') || '').toLowerCase();
+            var editableTags = ['a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'button', 'li', 'blockquote', 'figcaption', 'td', 'th', 'label'];
+            if (editableTags.indexOf(tag) !== -1) {
+                component.set('editable', true);
+            }
+            // Recurse into children
+            component.components().forEach(function(child) {
+                enableInlineEditing(child);
+            });
+        }
+
+        // ==================== RIGHT SIDEBAR - TABS ====================
+
+        function switchRightTab(tab) {
+            document.querySelectorAll('.right-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.right-panel').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelector('[onclick*="' + tab + '"]').classList.add('active');
+            document.getElementById('panel-' + tab).classList.add('active');
+
+            if (tab === 'layers') updateLayers();
+        }
+
+        // ==================== STYLE EDITING ====================
+
+        function applyStyle(prop, value) {
+            var selected = editor.getSelected();
+            if (!selected) return;
+            selected.addStyle(prop, value);
+            hasUnsavedChanges = true;
+        }
+
+        function toggleSection(titleEl) {
+            titleEl.parentElement.classList.toggle('collapsed');
+        }
+
+        // Update style panel when a component is selected
+        editor.on('component:selected', function(component) {
+            document.getElementById('noSelection').style.display = 'none';
+            document.getElementById('styleEditor').style.display = 'block';
+
+            // Read current styles and populate fields
+            var styles = component.getStyle();
+            if (styles['background-color']) {
+                try {
+                    document.getElementById('bgColor').value = rgbToHex(styles['background-color']);
+                    document.getElementById('bgColorText').value = styles['background-color'];
+                } catch(e) {}
+            }
+            if (styles['color']) {
+                try {
+                    document.getElementById('textColor').value = rgbToHex(styles['color']);
+                } catch(e) {}
+            }
+
+            // Build properties panel (href, src, alt, target, etc.)
+            buildPropsPanel(component);
+        });
+
+        editor.on('component:deselected', function() {
+            document.getElementById('noSelection').style.display = 'block';
+            document.getElementById('styleEditor').style.display = 'none';
+        });
+
+        // ==================== PROPERTIES PANEL ====================
+
+        function buildPropsPanel(component) {
+            var propsSection = document.getElementById('propsSection');
+            var propsBody = document.getElementById('propsBody');
+            propsBody.innerHTML = '';
+
+            var tag = (component.get('tagName') || '').toLowerCase();
+            var attrs = component.getAttributes();
+            var props = [];
+
+            // Show element type
+            var typeLabel = tag;
+            if (tag === 'a') typeLabel = 'Link';
+            else if (tag === 'img') typeLabel = 'Image';
+            else if (tag === 'iframe') typeLabel = 'Embed';
+            else if (tag === 'section') typeLabel = 'Section';
+            else if (tag === 'div') typeLabel = 'Container';
+            else if (tag.match(/^h[1-6]$/)) typeLabel = 'Heading ' + tag[1];
+            else if (tag === 'p') typeLabel = 'Paragraph';
+            else if (tag === 'button') typeLabel = 'Button';
+            else if (tag.startsWith('hive-')) typeLabel = 'Hive: ' + tag.replace('hive-', '').replace(/-/g, ' ');
+
+            // Add a small label showing what's selected
+            var typeRow = document.createElement('div');
+            typeRow.style.cssText = 'font-size:12px; color:#3498db; margin-bottom:12px; font-weight:600;';
+            typeRow.textContent = 'Selected: <' + tag + '> ' + typeLabel;
+            propsBody.appendChild(typeRow);
+
+            // Text content for text-containing elements
+            var textTags = ['a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'button', 'li', 'blockquote', 'figcaption'];
+            if (textTags.indexOf(tag) !== -1) {
+                var textContent = component.content || '';
+                // If no direct text content, try getting inner text from the view
+                if (!textContent && component.view && component.view.el) {
+                    textContent = component.view.el.innerText || '';
+                }
+                props.push({ name: '_text', label: 'Text', value: textContent.trim(), placeholder: 'Enter text...', type: 'text-content' });
+            }
+
+            // Links and buttons
+            if (tag === 'a') {
+                props.push({ name: 'href', label: 'Link URL', value: attrs.href || '#', placeholder: 'https://...' });
+                props.push({ name: 'target', label: 'Open in', type: 'select', value: attrs.target || '', options: [
+                    { value: '', label: 'Same window' },
+                    { value: '_blank', label: 'New tab' }
+                ]});
+                props.push({ name: 'title', label: 'Tooltip', value: attrs.title || '', placeholder: 'Hover text' });
+            }
+
+            // Images
+            if (tag === 'img') {
+                props.push({ name: 'src', label: 'Image URL', value: attrs.src || '', placeholder: '/uploads/...', hasImagePicker: true });
+                props.push({ name: 'alt', label: 'Alt text', value: attrs.alt || '', placeholder: 'Describe the image' });
+                props.push({ name: 'title', label: 'Tooltip', value: attrs.title || '', placeholder: 'Hover text' });
+            }
+
+            // Iframes
+            if (tag === 'iframe') {
+                props.push({ name: 'src', label: 'Embed URL', value: attrs.src || '', placeholder: 'https://...' });
+            }
+
+            // Hive blockchain components
+            var hiveComponents = {
+                'hive-blog': [
+                    { name: 'account', label: 'Account', placeholder: 'hive-username' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'posts-per-page', label: 'Posts per page', placeholder: '5' },
+                    { name: 'preview-length', label: 'Preview length', placeholder: '200' },
+                    { name: 'url-template', label: 'URL template', placeholder: '/blog/{author}/{permlink}' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ],
+                'hive-post': [
+                    { name: 'permlink', label: 'Permlink', placeholder: '@author/post-slug' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'preview', label: 'Preview mode', type: 'checkbox' },
+                    { name: 'max-length', label: 'Preview length', placeholder: '300' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ],
+                'hive-post-header': [
+                    { name: 'permlink', label: 'Permlink', placeholder: '@author/post-slug' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'show-title', label: 'Show title', type: 'checkbox' }
+                ],
+                'hive-post-content': [
+                    { name: 'permlink', label: 'Permlink', placeholder: '@author/post-slug' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'preview', label: 'Preview mode', type: 'checkbox' },
+                    { name: 'max-length', label: 'Preview length', placeholder: '300' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ],
+                'hive-post-footer': [
+                    { name: 'permlink', label: 'Permlink', placeholder: '@author/post-slug' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'show-tags', label: 'Show tags', type: 'checkbox' },
+                    { name: 'show-payout', label: 'Show payout', type: 'checkbox' },
+                    { name: 'show-link', label: 'Show link', type: 'checkbox' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ],
+                'hive-comments': [
+                    { name: 'permlink', label: 'Permlink', placeholder: '@author/post-slug' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'max-depth', label: 'Max depth', placeholder: '3' },
+                    { name: 'initial-limit', label: 'Initial limit', placeholder: '10' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ],
+                'hive-witness': [
+                    { name: 'account', label: 'Account', placeholder: 'witness-name' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]}
+                ],
+                'hive-tag': [
+                    { name: 'tag', label: 'Tag', placeholder: 'photography' },
+                    { name: 'theme', label: 'Theme', type: 'select', options: [
+                        { value: 'auto', label: 'Auto' }, { value: 'light', label: 'Light' }, { value: 'dark', label: 'Dark' }
+                    ]},
+                    { name: 'posts-per-page', label: 'Posts per page', placeholder: '10' },
+                    { name: 'preview-length', label: 'Preview length', placeholder: '150' },
+                    { name: 'url-template', label: 'URL template', placeholder: '/post/{author}/{permlink}' },
+                    { name: 'front-base-url', label: 'Front URL', placeholder: 'https://hive.blog' }
+                ]
+            };
+            if (hiveComponents[tag]) {
+                hiveComponents[tag].forEach(function(hProp) {
+                    var val = attrs[hProp.name] || '';
+                    if (hProp.type === 'checkbox') {
+                        val = attrs[hProp.name] !== undefined && attrs[hProp.name] !== 'false';
+                    }
+                    props.push({ name: hProp.name, label: hProp.label, value: val, placeholder: hProp.placeholder || '', type: hProp.type || 'text', options: hProp.options });
+                });
+            }
+
+            // ID (useful for anchor links)
+            props.push({ name: 'id', label: 'ID', value: attrs.id || '', placeholder: 'e.g. about-section' });
+
+            if (props.length <= 1) {
+                // Only the ID field, not very useful — hide section if just a generic div
+                if (tag !== 'a' && tag !== 'img' && tag !== 'iframe' && !tag.startsWith('hive-')) {
+                    propsSection.style.display = 'none';
+                    return;
+                }
+            }
+
+            propsSection.style.display = 'block';
+
+            props.forEach(function(prop) {
+                var row = document.createElement('div');
+                row.className = 'style-row';
+
+                var label = document.createElement('label');
+                label.textContent = prop.label;
+                row.appendChild(label);
+
+                if (prop.type === 'text-content') {
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = prop.value;
+                    input.placeholder = prop.placeholder || '';
+                    input.addEventListener('change', function() {
+                        // Update the text content of the component
+                        var children = component.components();
+                        if (children.length === 0) {
+                            // Simple text node — set content directly
+                            component.components(this.value);
+                        } else {
+                            // Has child components — set the text of the first text node
+                            component.content = this.value;
+                            // Also try updating via view for immediate visual feedback
+                            if (component.view && component.view.el) {
+                                // Find text nodes and update
+                                var el = component.view.el;
+                                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
+                                var textNode = walker.nextNode();
+                                if (textNode) textNode.nodeValue = this.value;
+                            }
+                        }
+                        hasUnsavedChanges = true;
+                    });
+                    var hint = document.createElement('div');
+                    hint.style.cssText = 'font-size:10px; color:#7f8c8d; margin-top:4px; flex-basis:100%;';
+                    hint.textContent = 'Tip: Double-click text in the canvas to edit it directly';
+                    var wrap = document.createElement('div');
+                    wrap.style.cssText = 'flex:1; display:flex; flex-direction:column; gap:4px;';
+                    wrap.appendChild(input);
+                    wrap.appendChild(hint);
+                    row.appendChild(wrap);
+                } else if (prop.type === 'select') {
+                    var select = document.createElement('select');
+                    prop.options.forEach(function(opt) {
+                        var option = document.createElement('option');
+                        option.value = opt.value;
+                        option.textContent = opt.label;
+                        if (opt.value === prop.value) option.selected = true;
+                        select.appendChild(option);
+                    });
+                    select.addEventListener('change', function() {
+                        applyAttribute(component, prop.name, this.value);
+                    });
+                    row.appendChild(select);
+                } else if (prop.type === 'checkbox') {
+                    var checkbox = document.createElement('input');
+                    checkbox.type = 'checkbox';
+                    checkbox.checked = !!prop.value;
+                    checkbox.style.cssText = 'width:auto; margin:0;';
+                    checkbox.addEventListener('change', function() {
+                        if (this.checked) {
+                            applyAttribute(component, prop.name, '');
+                        } else {
+                            component.removeAttributes(prop.name);
+                        }
+                    });
+                    row.appendChild(checkbox);
+                } else if (prop.hasImagePicker) {
+                    var wrapper = document.createElement('div');
+                    wrapper.style.cssText = 'flex:1; display:flex; flex-direction:column; gap:6px;';
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = prop.value;
+                    input.placeholder = prop.placeholder || '';
+                    input.addEventListener('change', function() {
+                        applyAttribute(component, prop.name, this.value);
+                    });
+                    wrapper.appendChild(input);
+                    var pickerBtn = document.createElement('button');
+                    pickerBtn.className = 'btn btn-secondary';
+                    pickerBtn.style.cssText = 'font-size:11px; padding:5px 10px;';
+                    pickerBtn.textContent = 'Choose Image';
+                    pickerBtn.addEventListener('click', function() {
+                        openImageAttrPicker(component, prop.name, input);
+                    });
+                    wrapper.appendChild(pickerBtn);
+                    row.appendChild(wrapper);
+                } else {
+                    var input = document.createElement('input');
+                    input.type = 'text';
+                    input.value = prop.value;
+                    input.placeholder = prop.placeholder || '';
+                    input.addEventListener('change', function() {
+                        applyAttribute(component, prop.name, this.value);
+                    });
+                    row.appendChild(input);
+                }
+
+                propsBody.appendChild(row);
+            });
+        }
+
+        function applyAttribute(component, name, value) {
+            if (name === 'src' && component.get('tagName').toLowerCase() === 'img') {
+                component.set('src', value);
+            }
+            var attrs = {};
+            attrs[name] = value;
+            component.setAttributes(Object.assign({}, component.getAttributes(), attrs));
+            // Force iframe to reload with new src
+            if (name === 'src' && component.get('tagName').toLowerCase() === 'iframe') {
+                var view = component.getView();
+                if (view && view.el) {
+                    view.el.setAttribute('src', value);
+                }
+            }
+            // Re-render Hive component placeholder when attributes change
+            var tagName = component.get('tagName').toLowerCase();
+            if (tagName.startsWith('hive-')) {
+                var view = component.getView();
+                if (view && view.onRender) view.onRender();
+            }
+            hasUnsavedChanges = true;
+        }
+
+        // Image picker for src attributes
+        function openImageAttrPicker(component, attrName, inputEl) {
+            var modal = document.getElementById('bgImageModal');
+            modal.style.display = 'flex';
+            var grid = document.getElementById('bgImageGrid');
+            grid.innerHTML = '<p style="color:#666">Loading images...</p>';
+
+            // Temporarily override the select function
+            window._imgPickerCallback = function(url) {
+                inputEl.value = url;
+                applyAttribute(component, attrName, url);
+                closeBgImageModal();
+                window._imgPickerCallback = null;
+            };
+
+            fetch('/admin/api/images').then(function(r) { return r.json(); }).then(function(data) {
+                var html = '';
+                if (data.images && data.images.length > 0) {
+                    data.images.forEach(function(img) {
+                        html += '<img src="' + img.url + '" style="width:100%; height:100px; object-fit:cover; border-radius:6px; cursor:pointer; border:3px solid transparent;" onclick="(window._imgPickerCallback || selectBgImage)(\'' + img.url + '\')" onmouseover="this.style.borderColor=\'#3498db\'" onmouseout="this.style.borderColor=\'transparent\'" />';
+                    });
+                }
+                grid.innerHTML = html || '<p style="color:#666">No images uploaded yet.</p>';
+            });
+        }
+
+        function rgbToHex(color) {
+            if (!color) return '#000000';
+            if (color.startsWith('#')) return color.length === 7 ? color : color;
+            var match = color.match(/(\d+)/g);
+            if (!match || match.length < 3) return '#000000';
+            return '#' + match.slice(0, 3).map(function(x) {
+                var hex = parseInt(x).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            }).join('');
+        }
+
+        // ==================== LAYERS ====================
+
+        function updateLayers() {
+            var wrapper = editor.getWrapper();
+            var container = document.getElementById('layersContainer');
+            container.innerHTML = '';
+            renderLayerTree(wrapper, container, 0);
+        }
+
+        function renderLayerTree(component, container, depth) {
+            var children = component.components();
+            children.forEach(function(child) {
+                var tag = child.get('tagName') || 'div';
+                var name = child.getName ? child.getName() : tag;
+                var el = document.createElement('div');
+                el.className = 'layer-item';
+                el.style.paddingLeft = (12 + depth * 16) + 'px';
+                el.innerHTML = '<span class="layer-tag">&lt;' + tag + '&gt;</span> ' + (name !== tag ? name : '');
+
+                el.addEventListener('click', function() {
+                    editor.select(child);
+                    document.querySelectorAll('.layer-item.selected').forEach(function(s) { s.classList.remove('selected'); });
+                    el.classList.add('selected');
+                });
+
+                container.appendChild(el);
+
+                if (child.components().length > 0) {
+                    renderLayerTree(child, container, depth + 1);
+                }
+            });
+        }
+
+        // ==================== BACKGROUND IMAGE PICKER ====================
+
+        function openBgImagePicker() {
+            var modal = document.getElementById('bgImageModal');
+            modal.style.display = 'flex';
+            var grid = document.getElementById('bgImageGrid');
+            grid.innerHTML = '<p style="color:#666">Loading images...</p>';
+
+            fetch('/admin/api/images').then(function(r) { return r.json(); }).then(function(data) {
+                var html = '';
+                if (data.images && data.images.length > 0) {
+                    data.images.forEach(function(img) {
+                        html += '<img src="' + img.url + '" style="width:100%; height:100px; object-fit:cover; border-radius:6px; cursor:pointer; border:3px solid transparent;" onclick="selectBgImage(\'' + img.url + '\')" onmouseover="this.style.borderColor=\'#3498db\'" onmouseout="this.style.borderColor=\'transparent\'" />';
+                    });
+                }
+                grid.innerHTML = html || '<p style="color:#666">No images uploaded yet.</p>';
+            });
+        }
+
+        function closeBgImageModal() {
+            document.getElementById('bgImageModal').style.display = 'none';
+        }
+
+        function selectBgImage(url) {
+            applyStyle('background-image', 'url(' + url + ')');
+            applyStyle('background-size', 'cover');
+            applyStyle('background-position', 'center');
+            closeBgImageModal();
+        }
+
+        async function uploadBgImage(files) {
+            if (!files || files.length === 0) return;
+            var formData = new FormData();
+            for (var i = 0; i < files.length; i++) formData.append('files', files[i]);
+            try {
+                var response = await fetch('/admin/api/upload', { method: 'POST', body: formData });
+                var data = await response.json();
+                if (response.ok && data.files && data.files.length > 0) {
+                    selectBgImage(data.files[0].url);
+                    openBgImagePicker();
+                }
+            } catch(e) { /* ignore */ }
+            document.getElementById('bgFileInput').value = '';
+        }
+
+        document.getElementById('bgImageModal').addEventListener('click', function(e) {
+            if (e.target === this) closeBgImageModal();
+        });
+
+        // ==================== DRAG & DROP FROM SIDEBAR TO CANVAS ====================
+
+        // Enable dropping HTML from sidebar blocks onto the GrapesJS canvas
+        editor.on('canvas:drop', function(dataTransfer, component) {
+            // GrapesJS handles its own block drops
+        });
+
+        // ==================== LOAD / SAVE ====================
+
+        async function loadPage() {
+            try {
+                var response = await fetch('/admin/api/page-content?path=' + encodeURIComponent(pagePath));
+                var data = await response.json();
+
+                if (response.ok) {
+                    pageBodyAttrs = data.bodyAttrs || '';
+                    if (data.html && data.html.trim()) {
+                        editor.setComponents(data.html);
+                    }
+                    if (data.css && data.css.trim()) {
+                        editor.setStyle(data.css);
+                    }
+                    if (data.assets && data.assets.length > 0) {
+                        editor.AssetManager.add(data.assets);
+                    }
+                    loadImages();
+                } else {
+                    setStatus('Error loading page', 'error');
+                }
+            } catch (e) {
+                console.error('Load error:', e);
+                setStatus('Error loading page', 'error');
+            }
+        }
+
+        async function loadImages() {
+            try {
+                var response = await fetch('/admin/api/images');
+                var data = await response.json();
+                if (data.images) {
+                    data.images.forEach(function(img) {
+                        editor.AssetManager.add({ src: img.url, name: img.name });
+                    });
+                }
+            } catch (e) { /* ignore */ }
+        }
+
+        async function savePage(andExit) {
+            if (isSaving) return;
+            isSaving = true;
+            setStatus('Saving...', 'saving');
+
+            try {
+                var html = editor.getHtml();
+                var css = editor.getCss();
+
+                var response = await fetch('/admin/api/page-content', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: pagePath, html: html, css: css })
+                });
+
+                if (!response.ok) throw new Error('Save failed');
+                hasUnsavedChanges = false;
+                setStatus('Saved!', 'saved');
+
+                if (andExit) window.location.href = '/admin/dashboard';
+            } catch (e) {
+                console.error('Save error:', e);
+                setStatus('Save failed!', 'error');
+            }
+
+            isSaving = false;
+        }
+
+        function setStatus(text, type) {
+            var el = document.getElementById('status');
+            el.textContent = text;
+            el.className = 'status status-' + type;
+        }
+
+        // Track changes
+        editor.on('change:changesCount', function() { hasUnsavedChanges = true; });
+
+        // Ctrl+S / Cmd+S
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                savePage(false);
+            }
+        });
+
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) { e.preventDefault(); e.returnValue = ''; }
+        });
+
+        loadPage();
+    </script>
+</body>
+</html>

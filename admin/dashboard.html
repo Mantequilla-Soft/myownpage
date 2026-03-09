@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Admin Panel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+        
+        .header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+        
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+        
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        
+        .pages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+        }
+        
+        .page-card {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            transition: all 0.3s;
+        }
+        
+        .page-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+        
+        .page-card h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: #333;
+        }
+        
+        .page-card p {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card h3 {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .quick-actions {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal.show {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+        }
+        
+        .modal-content h2 {
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 Admin Dashboard</h1>
+        <div class="header-actions">
+            <a href="/" class="btn btn-secondary" target="_blank">View Site</a>
+            <button onclick="logout()" class="btn btn-secondary">Logout</button>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card">
+                <h3>Total Pages</h3>
+                <div class="number" id="totalPages">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Images</h3>
+                <div class="number" id="totalImages">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Last Modified</h3>
+                <div class="number" style="font-size: 16px; margin-top: 14px;" id="lastModified">-</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Quick Actions</h2>
+            <div class="quick-actions">
+                <button onclick="showNewPageModal()" class="btn btn-primary">+ New Page</button>
+                <a href="/admin/media" class="btn btn-secondary">📁 Manage Images</a>
+                <button onclick="window.location.reload()" class="btn btn-secondary">🔄 Refresh</button>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>Your Pages</h2>
+            <div class="pages-grid" id="pagesGrid">
+                <!-- Pages will be loaded here -->
+            </div>
+        </div>
+    </div>
+    
+    <!-- New Page Modal -->
+    <div id="newPageModal" class="modal">
+        <div class="modal-content">
+            <h2>Create New Page</h2>
+            <form id="newPageForm">
+                <div class="form-group">
+                    <label for="pageTitle">Page Title</label>
+                    <input type="text" id="pageTitle" required placeholder="e.g., My New Project">
+                </div>
+                <input type="hidden" id="pageTemplate" value="blank">
+                <div class="modal-actions">
+                    <button type="button" onclick="closeNewPageModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Page</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <script>
+        // Load pages on page load
+        window.addEventListener('DOMContentLoaded', loadPages);
+        
+        async function loadPages() {
+            try {
+                const response = await fetch('/admin/api/pages');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayPages(data.pages);
+                    updateStats(data);
+                } else {
+                    if (response.status === 401) {
+                        window.location.href = '/admin/login';
+                    }
+                }
+            } catch (error) {
+                console.error('Error loading pages:', error);
+            }
+        }
+        
+        function displayPages(pages) {
+            const grid = document.getElementById('pagesGrid');
+            
+            if (pages.length === 0) {
+                grid.innerHTML = '<p style="color: #666;">No pages yet. Create your first page!</p>';
+                return;
+            }
+            
+            grid.innerHTML = pages.map(page => `
+                <div class="page-card">
+                    <h3>${page.title}</h3>
+                    <p>${page.path}</p>
+                    <div class="page-actions">
+                        <a href="/admin/builder?page=${encodeURIComponent(page.path)}" class="btn btn-primary btn-small">✏️ Edit</a>
+                        <a href="${page.viewUrl || page.path}" class="btn btn-secondary btn-small" target="_blank">👁️ View</a>
+                        ${!page.isMain ? `<button onclick="deletePage('${page.path}')" class="btn btn-danger btn-small">🗑️</button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function updateStats(data) {
+            document.getElementById('totalPages').textContent = data.pages.length;
+            document.getElementById('totalImages').textContent = data.imageCount || 0;
+            document.getElementById('lastModified').textContent = data.lastModified ? new Date(data.lastModified).toLocaleDateString() : '-';
+        }
+        
+        function showNewPageModal() {
+            document.getElementById('newPageModal').classList.add('show');
+        }
+        
+        function closeNewPageModal() {
+            document.getElementById('newPageModal').classList.remove('show');
+        }
+        
+        document.getElementById('newPageForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const title = document.getElementById('pageTitle').value;
+            const template = document.getElementById('pageTemplate').value;
+            
+            try {
+                const response = await fetch('/admin/api/pages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title, template })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    closeNewPageModal();
+                    window.location.href = `/admin/builder?page=${encodeURIComponent(data.path)}`;
+                } else {
+                    alert(data.error || 'Error creating page');
+                }
+            } catch (error) {
+                alert('Error creating page');
+            }
+        });
+        
+        async function deletePage(path) {
+            if (!confirm('Are you sure you want to delete this page?')) return;
+            
+            try {
+                const response = await fetch('/admin/api/pages', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path })
+                });
+                
+                if (response.ok) {
+                    loadPages();
+                } else {
+                    alert('Error deleting page');
+                }
+            } catch (error) {
+                alert('Error deleting page');
+            }
+        }
+        
+        async function logout() {
+            await fetch('/admin/api/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        }
+        
+        // Close modal when clicking outside
+        document.getElementById('newPageModal').addEventListener('click', (e) => {
+            if (e.target.id === 'newPageModal') {
+                closeNewPageModal();
+            }
+        });
+    </script>
+</body>
+</html>

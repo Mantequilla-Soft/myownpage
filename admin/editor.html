@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Page Editor - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; overflow: hidden; }
+
+        .toolbar {
+            background: #2c3e50;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 999;
+            height: 50px;
+        }
+        .toolbar-left { display: flex; gap: 15px; align-items: center; }
+        .toolbar h1 { font-size: 18px; margin-right: 10px; }
+        .page-name { color: #ecf0f1; font-size: 14px; }
+        .toolbar-right { display: flex; gap: 10px; align-items: center; }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+            color: white;
+        }
+        .btn-success { background: #27ae60; }
+        .btn-success:hover { background: #229954; }
+        .btn-secondary { background: #95a5a6; }
+        .btn-secondary:hover { background: #7f8c8d; }
+        .btn-warning { background: #e67e22; }
+        .btn-warning:hover { background: #d35400; }
+
+        .status { font-size: 13px; padding: 4px 10px; border-radius: 3px; }
+        .status-saving { color: #f39c12; }
+        .status-saved { color: #2ecc71; }
+        .status-error { color: #e74c3c; }
+        .status-info { color: #ecf0f1; }
+
+        #editorFrame {
+            width: 100%;
+            height: calc(100vh - 50px);
+            border: none;
+        }
+
+        /* Image picker modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-header h2 { font-size: 18px; color: #333; }
+        .modal-close {
+            background: none; border: none; font-size: 24px;
+            cursor: pointer; color: #666; padding: 0 5px;
+        }
+        .modal-body {
+            padding: 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+            cursor: pointer;
+            transition: border-color 0.2s;
+        }
+        .upload-area:hover { border-color: #667eea; }
+        .upload-area p { color: #666; margin-bottom: 10px; }
+        .image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+        .image-grid img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border-color 0.2s;
+        }
+        .image-grid img:hover { border-color: #667eea; }
+    </style>
+</head>
+<body>
+    <div class="toolbar">
+        <div class="toolbar-left">
+            <h1>Page Editor</h1>
+            <span class="page-name" id="pageName">Loading...</span>
+            <span class="status status-info" id="status">Click any text or image to edit</span>
+        </div>
+        <div class="toolbar-right">
+            <button onclick="savePage(false)" class="btn btn-warning">Save</button>
+            <button onclick="savePage(true)" class="btn btn-success">Save &amp; Exit</button>
+            <a href="/admin/dashboard" class="btn btn-secondary">&larr; Dashboard</a>
+        </div>
+    </div>
+
+    <iframe id="editorFrame" sandbox="allow-same-origin allow-scripts"></iframe>
+
+    <!-- Image picker modal -->
+    <div class="modal-overlay" id="imageModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2>Choose Image</h2>
+                <button class="modal-close" onclick="closeImageModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <p><strong>Click to upload a new image</strong></p>
+                    <p>JPG, PNG, GIF, WebP, SVG (max 10MB)</p>
+                    <input type="file" id="fileInput" accept="image/*" multiple style="display:none" onchange="uploadImages(this.files)">
+                </div>
+                <h3 style="margin-bottom:10px; color:#333;">Available Images</h3>
+                <div class="image-grid" id="imageGrid">
+                    <!-- Images loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const pagePath = urlParams.get('page');
+
+        if (!pagePath) {
+            alert('No page specified');
+            window.location.href = '/admin/dashboard';
+        }
+
+        document.getElementById('pageName').textContent = pagePath;
+
+        let hasUnsavedChanges = false;
+        let isSaving = false;
+        let currentImageTarget = null; // The <img> element being replaced
+        let originalFullHtml = ''; // Store the full file content for reconstruction
+
+        // Load the page into the iframe for editing
+        async function loadPage() {
+            try {
+                const response = await fetch('/admin/api/page-raw?path=' + encodeURIComponent(pagePath));
+
+                if (!response.ok) {
+                    var err = await response.text();
+                    setStatus('Error loading page', 'error');
+                    return;
+                }
+
+                originalFullHtml = await response.text();
+
+                const iframe = document.getElementById('editorFrame');
+                iframe.srcdoc = originalFullHtml;
+
+                iframe.onload = function() {
+                    initEditing(iframe);
+                    setStatus('Click any text or image to edit', 'info');
+                };
+            } catch (error) {
+                console.error('Error loading page:', error);
+                setStatus('Error loading page', 'error');
+            }
+        }
+
+        function initEditing(iframe) {
+            const doc = iframe.contentDocument;
+            const body = doc.body;
+
+            // Inject editing styles
+            const style = doc.createElement('style');
+            style.textContent = [
+                '[contenteditable]:hover { outline: 2px dashed #667eea !important; outline-offset: 2px; cursor: text; }',
+                '[contenteditable]:focus { outline: 2px solid #667eea !important; outline-offset: 2px; }',
+                'img.editable-img:hover { outline: 3px solid #e67e22 !important; outline-offset: 2px; cursor: pointer; }',
+                '.editor-highlight { outline: 2px dashed #27ae60 !important; outline-offset: 2px; }',
+            ].join('\n');
+            doc.head.appendChild(style);
+
+            // Make text elements editable
+            var editableSelectors = 'h1, h2, h3, h4, h5, h6, p, span, a, li, blockquote, figcaption, .caption';
+            var textElements = body.querySelectorAll(editableSelectors);
+            textElements.forEach(function(el) {
+                // Skip nav/header links and structural elements
+                if (el.closest('.header, .menu, .sidebar, .footer, nav')) return;
+                // Skip elements that are just wrappers
+                if (el.children.length > 0 && el.textContent.trim() === '') return;
+
+                el.setAttribute('contenteditable', 'true');
+                el.addEventListener('input', function() {
+                    hasUnsavedChanges = true;
+                    setStatus('Unsaved changes', 'saving');
+                });
+                // Prevent links from navigating while editing
+                el.addEventListener('click', function(e) {
+                    if (el.tagName === 'A') e.preventDefault();
+                });
+            });
+
+            // Make images clickable for replacement
+            var images = body.querySelectorAll('img[src*="images/"], img[src*="uploads/"]');
+            images.forEach(function(img) {
+                img.classList.add('editable-img');
+                img.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    currentImageTarget = img;
+                    openImageModal();
+                });
+            });
+
+            // Also make footer text editable
+            var footerText = body.querySelectorAll('.footer p, .footer .wrapper--small');
+            footerText.forEach(function(el) {
+                el.setAttribute('contenteditable', 'true');
+                el.addEventListener('input', function() {
+                    hasUnsavedChanges = true;
+                    setStatus('Unsaved changes', 'saving');
+                });
+            });
+
+            // Prevent all link navigation in edit mode
+            doc.addEventListener('click', function(e) {
+                var link = e.target.closest('a');
+                if (link && !e.target.hasAttribute('contenteditable')) {
+                    e.preventDefault();
+                }
+            });
+        }
+
+        // Save the edited page
+        async function savePage(andExit) {
+            if (isSaving) return;
+            isSaving = true;
+            setStatus('Saving...', 'saving');
+
+            try {
+                var iframe = document.getElementById('editorFrame');
+                var doc = iframe.contentDocument;
+
+                // Remove editor-injected styles and classes before saving
+                var editorStyles = doc.querySelectorAll('style');
+                var lastStyle = editorStyles[editorStyles.length - 1];
+                if (lastStyle && lastStyle.textContent.indexOf('editable-img') !== -1) {
+                    lastStyle.remove();
+                }
+
+                // Clean up contenteditable attributes and editor classes
+                doc.querySelectorAll('[contenteditable]').forEach(function(el) {
+                    el.removeAttribute('contenteditable');
+                });
+                doc.querySelectorAll('.editable-img').forEach(function(el) {
+                    el.classList.remove('editable-img');
+                });
+                doc.querySelectorAll('.editor-highlight').forEach(function(el) {
+                    el.classList.remove('editor-highlight');
+                });
+
+                // Get the full HTML from the iframe
+                var fullHtml = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+
+                const response = await fetch('/admin/api/save-full-page', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        path: pagePath,
+                        content: fullHtml
+                    })
+                });
+
+                if (!response.ok) throw new Error('Save failed');
+
+                hasUnsavedChanges = false;
+                setStatus('Saved!', 'saved');
+
+                if (andExit) {
+                    window.location.href = '/admin/dashboard';
+                } else {
+                    // Re-init editing since we removed contenteditable
+                    setTimeout(function() {
+                        initEditing(iframe);
+                    }, 100);
+                }
+            } catch (error) {
+                console.error('Save error:', error);
+                setStatus('Save failed!', 'error');
+                // Re-init editing on failure too
+                var iframe = document.getElementById('editorFrame');
+                initEditing(iframe);
+            }
+
+            isSaving = false;
+        }
+
+        // Image modal
+        async function openImageModal() {
+            document.getElementById('imageModal').classList.add('show');
+            var grid = document.getElementById('imageGrid');
+            grid.innerHTML = '<p style="color:#666">Loading images...</p>';
+
+            try {
+                // Load uploaded images
+                var response = await fetch('/admin/api/images');
+                var data = await response.json();
+                var html = '';
+
+                if (data.images && data.images.length > 0) {
+                    data.images.forEach(function(img) {
+                        html += '<img src="' + img.url + '" onclick="selectImage(\'' + img.url + '\')" title="' + img.name + '">';
+                    });
+                }
+
+                // Also list images from the images/ directory
+                var imagesDir = document.getElementById('editorFrame').contentDocument.querySelectorAll('img[src*="images/"]');
+                var seen = {};
+                imagesDir.forEach(function(img) {
+                    var src = img.getAttribute('src');
+                    if (src && !seen[src]) {
+                        seen[src] = true;
+                        // Make sure path starts with /
+                        var fullSrc = src.startsWith('/') ? src : '/' + src;
+                        html += '<img src="' + fullSrc + '" onclick="selectImage(\'' + fullSrc + '\')" title="' + src.split('/').pop() + '">';
+                    }
+                });
+
+                grid.innerHTML = html || '<p style="color:#666">No images found. Upload one above.</p>';
+            } catch (e) {
+                grid.innerHTML = '<p style="color:#e74c3c">Error loading images</p>';
+            }
+        }
+
+        function closeImageModal() {
+            document.getElementById('imageModal').classList.remove('show');
+            currentImageTarget = null;
+        }
+
+        function selectImage(url) {
+            if (currentImageTarget) {
+                currentImageTarget.src = url;
+                hasUnsavedChanges = true;
+                setStatus('Image replaced - unsaved changes', 'saving');
+            }
+            closeImageModal();
+        }
+
+        async function uploadImages(files) {
+            if (!files || files.length === 0) return;
+
+            var formData = new FormData();
+            for (var i = 0; i < files.length; i++) {
+                formData.append('files', files[i]);
+            }
+
+            try {
+                setStatus('Uploading...', 'saving');
+                var response = await fetch('/admin/api/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                var data = await response.json();
+
+                if (response.ok && data.files) {
+                    // If we have a target image, use the first uploaded file
+                    if (currentImageTarget && data.files.length > 0) {
+                        selectImage(data.files[0].url);
+                    }
+                    // Refresh the image grid
+                    openImageModal();
+                    setStatus('Upload complete!', 'saved');
+                } else {
+                    setStatus('Upload failed', 'error');
+                }
+            } catch (e) {
+                setStatus('Upload failed', 'error');
+            }
+
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+
+        function setStatus(text, type) {
+            var el = document.getElementById('status');
+            el.textContent = text;
+            el.className = 'status status-' + type;
+        }
+
+        // Ctrl+S / Cmd+S
+        document.addEventListener('keydown', function(e) {
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                savePage(false);
+            }
+        });
+
+        // Warn before leaving with unsaved changes
+        window.addEventListener('beforeunload', function(e) {
+            if (hasUnsavedChanges) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Close modal on overlay click
+        document.getElementById('imageModal').addEventListener('click', function(e) {
+            if (e.target === this) closeImageModal();
+        });
+
+        loadPage();
+    </script>
+</body>
+</html>
