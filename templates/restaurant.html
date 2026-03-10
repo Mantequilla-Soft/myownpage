@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.resto-hero {
+    min-height: 85vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.55)), url('https://placehold.co/1600x900/1a1a0a/ffffff?text=.') center/cover;
+    background-color: #1a1a0a;
+    padding: 60px 20px;
+}
+.resto-hero h1 {
+    font-size: 64px;
+    color: #fff;
+    font-weight: 300;
+    letter-spacing: 8px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+}
+.resto-hero .tagline {
+    color: #d4a574;
+    font-size: 16px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+}
+.resto-hero .btn-reserve {
+    display: inline-block;
+    padding: 16px 48px;
+    border: 1px solid #d4a574;
+    color: #d4a574;
+    text-decoration: none;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-size: 13px;
+    transition: all 0.3s;
+}
+.resto-hero .btn-reserve:hover {
+    background: #d4a574;
+    color: #111;
+}
+.resto-section {
+    padding: 80px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.resto-section h2 {
+    font-size: 36px;
+    font-weight: 300;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #222;
+    letter-spacing: 2px;
+}
+.resto-section .divider {
+    width: 60px;
+    height: 1px;
+    background: #d4a574;
+    margin: 0 auto 40px;
+}
+.resto-section p.intro {
+    text-align: center;
+    font-size: 16px;
+    color: #777;
+    max-width: 600px;
+    margin: 0 auto 48px;
+    line-height: 1.7;
+}
+.menu-category {
+    margin-bottom: 40px;
+}
+.menu-category h3 {
+    font-size: 18px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #d4a574;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 400;
+}
+.menu-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    border-bottom: 1px dotted #ddd;
+}
+.menu-item-name {
+    font-size: 16px;
+    color: #333;
+    font-weight: 500;
+}
+.menu-item-desc {
+    font-size: 13px;
+    color: #999;
+    margin-top: 4px;
+}
+.menu-item-price {
+    font-size: 16px;
+    color: #d4a574;
+    font-weight: 600;
+    white-space: nowrap;
+    margin-left: 20px;
+}
+.resto-images {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 4px;
+}
+.resto-images img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+.resto-info {
+    padding: 80px 20px;
+    background: #1a1a0a;
+    color: #fff;
+}
+.resto-info-grid {
+    max-width: 900px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 40px;
+    text-align: center;
+}
+.resto-info-grid h3 {
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #d4a574;
+    margin-bottom: 16px;
+    font-weight: 400;
+}
+.resto-info-grid p {
+    color: #aaa;
+    font-size: 15px;
+    line-height: 1.8;
+}
+.resto-footer {
+    text-align: center;
+    padding: 30px 20px;
+    background: #111;
+    color: #555;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+    </style>
+</head>
+<body>
+    <section class="resto-hero">
+        <div>
+            <h1>Your Restaurant</h1>
+            <p class="tagline">Fine dining &middot; Est. 2020</p>
+            <a href="#menu" class="btn-reserve">View Menu</a>
+        </div>
+    </section>
+
+    <section class="resto-section" id="menu">
+        <h2>The Menu</h2>
+        <div class="divider"></div>
+        <p class="intro">Seasonal ingredients, crafted with care. Our menu changes with the harvest.</p>
+
+        <div class="menu-category">
+            <h3>Starters</h3>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Burrata & Heirloom Tomatoes</div>
+                    <div class="menu-item-desc">Basil oil, aged balsamic, sea salt flakes</div>
+                </div>
+                <span class="menu-item-price">$16</span>
+            </div>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Tuna Tartare</div>
+                    <div class="menu-item-desc">Avocado, sesame, citrus ponzu</div>
+                </div>
+                <span class="menu-item-price">$19</span>
+            </div>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">French Onion Soup</div>
+                    <div class="menu-item-desc">Gruyere crouton, caramelized onions</div>
+                </div>
+                <span class="menu-item-price">$14</span>
+            </div>
+        </div>
+
+        <div class="menu-category">
+            <h3>Mains</h3>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Pan-Seared Salmon</div>
+                    <div class="menu-item-desc">Asparagus, lemon butter, wild rice</div>
+                </div>
+                <span class="menu-item-price">$34</span>
+            </div>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Filet Mignon</div>
+                    <div class="menu-item-desc">Truffle mash, red wine reduction, roasted vegetables</div>
+                </div>
+                <span class="menu-item-price">$48</span>
+            </div>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Wild Mushroom Risotto</div>
+                    <div class="menu-item-desc">Porcini, parmesan, truffle oil</div>
+                </div>
+                <span class="menu-item-price">$28</span>
+            </div>
+        </div>
+
+        <div class="menu-category">
+            <h3>Desserts</h3>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Chocolate Fondant</div>
+                    <div class="menu-item-desc">Vanilla bean ice cream, raspberry coulis</div>
+                </div>
+                <span class="menu-item-price">$15</span>
+            </div>
+            <div class="menu-item">
+                <div>
+                    <div class="menu-item-name">Crème Brûlée</div>
+                    <div class="menu-item-desc">Madagascar vanilla, caramelized sugar</div>
+                </div>
+                <span class="menu-item-price">$13</span>
+            </div>
+        </div>
+    </section>
+
+    <div class="resto-images">
+        <img src="https://placehold.co/600x300/2a1a0a/d4a574?text=Interior" alt="Restaurant interior">
+        <img src="https://placehold.co/600x300/1a1a0a/d4a574?text=Dish" alt="Signature dish">
+        <img src="https://placehold.co/600x300/0a1a1a/d4a574?text=Ambiance" alt="Ambiance">
+    </div>
+
+    <section class="resto-info">
+        <div class="resto-info-grid">
+            <div>
+                <h3>Hours</h3>
+                <p>Tuesday — Saturday<br>6:00 PM — 11:00 PM<br><br>Sunday Brunch<br>11:00 AM — 3:00 PM</p>
+            </div>
+            <div>
+                <h3>Location</h3>
+                <p>123 Main Street<br>Your City, ST 10001<br><br>Reservations recommended</p>
+            </div>
+            <div>
+                <h3>Contact</h3>
+                <p>Phone: (555) 123-4567<br>Email: hello@example.com<br><br>Follow us on Hive: @{{USERNAME}}</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="resto-footer">
+        <p>&copy; 2026 Your Restaurant &middot; Built with My Own Page</p>
+    </footer>
+</body>
+</html>

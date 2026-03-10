@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.vlog-hero {
+    min-height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(135deg, #0f0f0f, #1a1a2e);
+    padding: 80px 20px;
+    position: relative;
+}
+.vlog-hero h1 {
+    font-size: 60px;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 16px;
+}
+.vlog-hero .tagline {
+    color: #888;
+    font-size: 20px;
+    margin-bottom: 32px;
+    max-width: 550px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.vlog-hero .subscribe-btn {
+    display: inline-block;
+    padding: 16px 48px;
+    background: #e74c3c;
+    color: white;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+.vlog-hero .subscribe-btn:hover { background: #c0392b; }
+.vlog-featured {
+    padding: 60px 20px;
+    background: #0a0a0a;
+}
+.vlog-featured h2 {
+    color: #fff;
+    font-size: 28px;
+    margin-bottom: 30px;
+    text-align: center;
+}
+.vlog-featured .video-wrap {
+    max-width: 960px;
+    margin: 0 auto;
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+    border-radius: 12px;
+    overflow: hidden;
+}
+.vlog-featured .video-wrap iframe {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    border: 0;
+}
+.vlog-grid-section {
+    padding: 80px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.vlog-grid-section h2 {
+    font-size: 28px;
+    margin-bottom: 32px;
+}
+.vlog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+}
+.vlog-thumb {
+    background: #f5f5f5;
+    border-radius: 12px;
+    overflow: hidden;
+    transition: transform 0.2s;
+    cursor: pointer;
+}
+.vlog-thumb:hover { transform: translateY(-4px); }
+.vlog-thumb img {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+}
+.vlog-thumb-info {
+    padding: 16px;
+}
+.vlog-thumb-info h3 {
+    font-size: 16px;
+    margin-bottom: 6px;
+    color: #1a1a1a;
+}
+.vlog-thumb-info p {
+    font-size: 13px;
+    color: #888;
+}
+.vlog-about {
+    padding: 80px 20px;
+    background: #f9f9f9;
+}
+.vlog-about-inner {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.vlog-about-inner img {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.vlog-about-text h2 {
+    font-size: 28px;
+    margin-bottom: 12px;
+}
+.vlog-about-text p {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #555;
+}
+.vlog-footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: #0f0f0f;
+    color: #555;
+    font-size: 14px;
+}
+    </style>
+</head>
+<body>
+    <section class="vlog-hero">
+        <div>
+            <h1>@{{USERNAME}}</h1>
+            <p class="tagline">Creator, storyteller, and explorer. Watch my latest adventures and deep dives.</p>
+            <a href="#featured" class="subscribe-btn">Watch Latest Video</a>
+        </div>
+    </section>
+
+    <section class="vlog-featured" id="featured">
+        <h2>Featured Video</h2>
+        <div class="video-wrap">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+        </div>
+    </section>
+
+    <section class="vlog-grid-section">
+        <h2>More Videos</h2>
+        <div class="vlog-grid">
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/1a1a2e/e74c3c?text=Episode+12" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>Why I Left Social Media for the Blockchain</h3>
+                    <p>24K views &middot; 2 weeks ago</p>
+                </div>
+            </div>
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/2d1b69/3498db?text=Episode+11" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>Building a Community from Zero</h3>
+                    <p>18K views &middot; 1 month ago</p>
+                </div>
+            </div>
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/0a3d62/27ae60?text=Episode+10" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>My Creative Process Explained</h3>
+                    <p>31K views &middot; 2 months ago</p>
+                </div>
+            </div>
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/3a1520/f39c12?text=Episode+09" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>Gear I Use Every Day</h3>
+                    <p>42K views &middot; 3 months ago</p>
+                </div>
+            </div>
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/1a2e1a/2ecc71?text=Episode+08" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>Travel Vlog: Tokyo After Dark</h3>
+                    <p>56K views &middot; 4 months ago</p>
+                </div>
+            </div>
+            <div class="vlog-thumb">
+                <img src="https://placehold.co/640x360/2e1a2e/9b59b6?text=Episode+07" alt="Video thumbnail">
+                <div class="vlog-thumb-info">
+                    <h3>How Hive Changed My Life</h3>
+                    <p>67K views &middot; 5 months ago</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="vlog-about">
+        <div class="vlog-about-inner">
+            <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="Creator photo">
+            <div class="vlog-about-text">
+                <h2>About @{{USERNAME}}</h2>
+                <p>I create content about things I'm passionate about. Every video I make is documented on the Hive blockchain — uncensored and permanent. Thanks for watching and being part of the journey.</p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="vlog-footer">
+        <p>&copy; 2026 @{{USERNAME}} &middot; Built with My Own Page</p>
+    </footer>
+</body>
+</html>

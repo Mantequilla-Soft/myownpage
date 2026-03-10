@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.cv-page {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+.cv-header {
+    padding: 80px 0 40px;
+    border-bottom: 3px solid #111;
+}
+.cv-header h1 {
+    font-size: 52px;
+    font-weight: 800;
+    color: #111;
+    letter-spacing: -2px;
+    margin-bottom: 8px;
+}
+.cv-header .role {
+    font-size: 20px;
+    color: #666;
+    margin-bottom: 20px;
+}
+.cv-header .contact-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 14px;
+    color: #888;
+}
+.cv-header .contact-row a {
+    color: #2563eb;
+    text-decoration: none;
+}
+.cv-header .contact-row a:hover { text-decoration: underline; }
+.cv-section {
+    padding: 40px 0;
+    border-bottom: 1px solid #e5e5e5;
+}
+.cv-section:last-child { border-bottom: none; }
+.cv-section h2 {
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: #999;
+    margin-bottom: 24px;
+    font-weight: 600;
+}
+.cv-summary p {
+    font-size: 18px;
+    line-height: 1.7;
+    color: #444;
+}
+.cv-entry {
+    margin-bottom: 28px;
+}
+.cv-entry:last-child { margin-bottom: 0; }
+.cv-entry-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 6px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.cv-entry-header h3 {
+    font-size: 18px;
+    font-weight: 700;
+    color: #222;
+}
+.cv-entry-header .period {
+    font-size: 14px;
+    color: #999;
+    white-space: nowrap;
+}
+.cv-entry .company {
+    font-size: 15px;
+    color: #2563eb;
+    margin-bottom: 8px;
+}
+.cv-entry p {
+    font-size: 15px;
+    line-height: 1.6;
+    color: #555;
+}
+.cv-skills-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+}
+.cv-skill {
+    padding: 12px 16px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+}
+.cv-education-entry {
+    margin-bottom: 20px;
+}
+.cv-education-entry h3 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #222;
+    margin-bottom: 4px;
+}
+.cv-education-entry .school {
+    font-size: 14px;
+    color: #666;
+}
+.cv-education-entry .year {
+    font-size: 13px;
+    color: #999;
+}
+.cv-footer {
+    padding: 40px 0;
+    text-align: center;
+    color: #ccc;
+    font-size: 13px;
+}
+    </style>
+</head>
+<body>
+    <div class="cv-page">
+        <header class="cv-header">
+            <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="@{{USERNAME}}" style="width:90px; height:90px; border-radius:50%; object-fit:cover; margin-bottom:16px;">
+            <h1>Your Name</h1>
+            <p class="role">Software Engineer & Blockchain Developer</p>
+            <div class="contact-row">
+                <span>your-city@example.com</span>
+                <a href="#">linkedin.com/in/you</a>
+                <a href="#">@{{USERNAME}} on Hive</a>
+            </div>
+        </header>
+
+        <section class="cv-section cv-summary">
+            <h2>About</h2>
+            <p>Full-stack developer with 8+ years of experience building scalable web applications and blockchain solutions. Passionate about decentralized technologies, open-source, and clean code. Active contributor to the Hive ecosystem.</p>
+        </section>
+
+        <section class="cv-section">
+            <h2>Experience</h2>
+            <div class="cv-entry">
+                <div class="cv-entry-header">
+                    <h3>Senior Software Engineer</h3>
+                    <span class="period">2023 — Present</span>
+                </div>
+                <p class="company">Blockchain Solutions Inc.</p>
+                <p>Led development of a decentralized content platform serving 50K+ users. Architected the backend with Node.js and PostgreSQL, implemented smart contract integrations, and mentored a team of 4 junior developers.</p>
+            </div>
+            <div class="cv-entry">
+                <div class="cv-entry-header">
+                    <h3>Full Stack Developer</h3>
+                    <span class="period">2020 — 2023</span>
+                </div>
+                <p class="company">Digital Agency Co.</p>
+                <p>Built responsive web applications for Fortune 500 clients using React, Node.js, and cloud infrastructure. Reduced page load times by 60% through performance optimization.</p>
+            </div>
+            <div class="cv-entry">
+                <div class="cv-entry-header">
+                    <h3>Junior Developer</h3>
+                    <span class="period">2018 — 2020</span>
+                </div>
+                <p class="company">StartupHub</p>
+                <p>Developed MVP products for early-stage startups. Gained experience in rapid prototyping, agile methodologies, and full product lifecycle.</p>
+            </div>
+        </section>
+
+        <section class="cv-section">
+            <h2>Skills</h2>
+            <div class="cv-skills-grid">
+                <div class="cv-skill">JavaScript / TypeScript</div>
+                <div class="cv-skill">React & Node.js</div>
+                <div class="cv-skill">Python</div>
+                <div class="cv-skill">PostgreSQL / MongoDB</div>
+                <div class="cv-skill">Docker & AWS</div>
+                <div class="cv-skill">Blockchain / Hive</div>
+                <div class="cv-skill">REST & GraphQL APIs</div>
+                <div class="cv-skill">Git & CI/CD</div>
+            </div>
+        </section>
+
+        <section class="cv-section">
+            <h2>Education</h2>
+            <div class="cv-education-entry">
+                <h3>B.Sc. Computer Science</h3>
+                <p class="school">University of Technology</p>
+                <p class="year">2014 — 2018</p>
+            </div>
+        </section>
+
+        <footer class="cv-footer">
+            <p>Built with My Own Page &middot; Powered by Hive</p>
+        </footer>
+    </div>
+</body>
+</html>

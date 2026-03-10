@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.biz-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: #fff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.biz-nav .brand {
+    font-size: 20px;
+    font-weight: 700;
+    color: #2563eb;
+    text-decoration: none;
+}
+.biz-nav .links { display: flex; gap: 24px; }
+.biz-nav .links a {
+    color: #555;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.biz-nav .links a:hover { color: #2563eb; }
+.biz-hero {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 40px;
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+}
+.biz-hero-inner {
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 60px;
+    flex-wrap: wrap;
+}
+.biz-hero-text { flex: 1; min-width: 300px; }
+.biz-hero-text h1 {
+    font-size: 48px;
+    font-weight: 800;
+    color: #1e293b;
+    line-height: 1.15;
+    margin-bottom: 20px;
+}
+.biz-hero-text p {
+    font-size: 18px;
+    color: #64748b;
+    line-height: 1.6;
+    margin-bottom: 28px;
+}
+.biz-hero-text .cta {
+    display: inline-block;
+    padding: 16px 40px;
+    background: #2563eb;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+.biz-hero-text .cta:hover { background: #1d4ed8; }
+.biz-hero-img {
+    flex: 1;
+    min-width: 300px;
+}
+.biz-hero-img img {
+    width: 100%;
+    border-radius: 16px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.1);
+}
+.biz-services {
+    padding: 80px 20px;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.biz-services h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+.biz-services .subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 48px;
+    font-size: 16px;
+}
+.biz-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+.biz-service-card {
+    background: #fff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: box-shadow 0.2s;
+}
+.biz-service-card:hover {
+    box-shadow: 0 8px 24px rgba(0,0,0,0.08);
+}
+.biz-service-icon {
+    font-size: 40px;
+    margin-bottom: 16px;
+}
+.biz-service-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #1e293b;
+}
+.biz-service-card p {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+.biz-testimonials {
+    padding: 80px 20px;
+    background: #f8fafc;
+}
+.biz-testimonials h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #1e293b;
+}
+.biz-testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.biz-testimonial {
+    background: white;
+    border-radius: 12px;
+    padding: 28px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+.biz-testimonial p {
+    font-size: 15px;
+    line-height: 1.7;
+    color: #475569;
+    font-style: italic;
+    margin-bottom: 16px;
+}
+.biz-testimonial .author {
+    font-weight: 600;
+    color: #1e293b;
+    font-style: normal;
+    font-size: 14px;
+}
+.biz-cta-section {
+    padding: 80px 20px;
+    text-align: center;
+    background: #2563eb;
+    color: white;
+}
+.biz-cta-section h2 {
+    font-size: 36px;
+    margin-bottom: 16px;
+}
+.biz-cta-section p {
+    font-size: 18px;
+    opacity: 0.85;
+    margin-bottom: 32px;
+}
+.biz-cta-section .cta-white {
+    display: inline-block;
+    padding: 16px 48px;
+    background: white;
+    color: #2563eb;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+}
+.biz-footer {
+    padding: 40px 20px;
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+}
+    </style>
+</head>
+<body>
+    <nav class="biz-nav">
+        <a href="/" class="brand">Your Business</a>
+        <div class="links">
+            <a href="#services">Services</a>
+            <a href="#testimonials">Reviews</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <section class="biz-hero">
+        <div class="biz-hero-inner">
+            <div class="biz-hero-text">
+                <h1>We Help Your Business Grow</h1>
+                <p>Professional services tailored to your needs. From strategy to execution, we've got you covered.</p>
+                <a href="#contact" class="cta">Get Started</a>
+            </div>
+            <div class="biz-hero-img">
+                <img src="https://placehold.co/600x400/2563eb/ffffff?text=Your+Business" alt="Business">
+            </div>
+        </div>
+    </section>
+
+    <section class="biz-services" id="services">
+        <h2>What We Do</h2>
+        <p class="subtitle">Comprehensive solutions for modern businesses</p>
+        <div class="biz-services-grid">
+            <div class="biz-service-card">
+                <div class="biz-service-icon">&#x1f4ca;</div>
+                <h3>Strategy & Consulting</h3>
+                <p>Data-driven strategies that align with your business goals and drive measurable results.</p>
+            </div>
+            <div class="biz-service-card">
+                <div class="biz-service-icon">&#x1f3a8;</div>
+                <h3>Design & Branding</h3>
+                <p>Visual identities that resonate with your audience and stand out in the market.</p>
+            </div>
+            <div class="biz-service-card">
+                <div class="biz-service-icon">&#x1f680;</div>
+                <h3>Development</h3>
+                <p>Custom solutions built with modern technologies that scale with your growth.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="biz-testimonials" id="testimonials">
+        <h2>What Our Clients Say</h2>
+        <div class="biz-testimonials-grid">
+            <div class="biz-testimonial">
+                <p>"Working with this team transformed our online presence. Professional, responsive, and results-driven."</p>
+                <span class="author">Sarah Johnson, CEO at TechCorp</span>
+            </div>
+            <div class="biz-testimonial">
+                <p>"They delivered beyond our expectations. The attention to detail and strategic thinking was impressive."</p>
+                <span class="author">Michael Chen, Founder at StartupX</span>
+            </div>
+            <div class="biz-testimonial">
+                <p>"A truly collaborative partner. They understood our vision and brought it to life beautifully."</p>
+                <span class="author">Emily Rodriguez, Marketing Director</span>
+            </div>
+        </div>
+    </section>
+
+    <section class="biz-cta-section" id="contact">
+        <h2>Ready to Get Started?</h2>
+        <p>Let's talk about how we can help your business succeed.</p>
+        <a href="mailto:hello@example.com" class="cta-white">Contact Us</a>
+    </section>
+
+    <footer class="biz-footer">
+        <p>&copy; 2026 Your Business &middot; Built with My Own Page</p>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.port-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    background: #111;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.port-nav .brand {
+    color: #fff;
+    font-size: 20px;
+    font-weight: 700;
+    text-decoration: none;
+    letter-spacing: -0.5px;
+}
+.port-nav .links {
+    display: flex;
+    gap: 24px;
+}
+.port-nav .links a {
+    color: #aaa;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.port-nav .links a:hover { color: #fff; }
+.port-hero {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    padding: 80px 40px;
+    background: #111;
+    color: white;
+}
+.port-hero h1 {
+    font-size: 72px;
+    font-weight: 800;
+    letter-spacing: -3px;
+    line-height: 1.05;
+    margin-bottom: 24px;
+}
+.port-hero p {
+    font-size: 20px;
+    color: #888;
+    max-width: 500px;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+.port-hero .cta {
+    display: inline-block;
+    padding: 14px 36px;
+    border: 2px solid #fff;
+    color: #fff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+.port-hero .cta:hover {
+    background: #fff;
+    color: #111;
+}
+.port-projects {
+    padding: 80px 40px;
+    background: #f9f9f9;
+}
+.port-projects h2 {
+    font-size: 36px;
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+.port-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.port-card {
+    background: #fff;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    transition: transform 0.3s, box-shadow 0.3s;
+}
+.port-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+}
+.port-card img {
+    width: 100%;
+    height: 240px;
+    object-fit: cover;
+}
+.port-card-body {
+    padding: 24px;
+}
+.port-card-body h3 {
+    font-size: 20px;
+    margin-bottom: 8px;
+}
+.port-card-body p {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}
+.port-contact {
+    padding: 80px 40px;
+    text-align: center;
+    background: #111;
+    color: white;
+}
+.port-contact h2 {
+    font-size: 36px;
+    margin-bottom: 16px;
+}
+.port-contact p {
+    color: #888;
+    margin-bottom: 32px;
+    font-size: 18px;
+}
+.port-contact .email-link {
+    display: inline-block;
+    padding: 16px 48px;
+    background: #fff;
+    color: #111;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 18px;
+}
+    </style>
+</head>
+<body>
+    <nav class="port-nav">
+        <a href="/" class="brand">@{{USERNAME}}</a>
+        <div class="links">
+            <a href="#work">Work</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <section class="port-hero">
+        <div>
+            <h1>Designer &<br>Creative Director</h1>
+            <p>I craft digital experiences that are bold, functional, and memorable. Currently available for freelance projects.</p>
+            <a href="#work" class="cta">View My Work</a>
+        </div>
+    </section>
+
+    <section class="port-projects" id="work">
+        <h2>Selected Work</h2>
+        <div class="port-grid">
+            <div class="port-card">
+                <img src="https://placehold.co/680x480/1a1a2e/6c5ce7?text=Project+01" alt="Project">
+                <div class="port-card-body">
+                    <h3>Brand Identity</h3>
+                    <p>Complete visual identity for a blockchain startup including logo, guidelines, and collateral.</p>
+                </div>
+            </div>
+            <div class="port-card">
+                <img src="https://placehold.co/680x480/2d1b69/e74c3c?text=Project+02" alt="Project">
+                <div class="port-card-body">
+                    <h3>Web Application</h3>
+                    <p>UI/UX design for a DeFi dashboard with real-time data visualization.</p>
+                </div>
+            </div>
+            <div class="port-card">
+                <img src="https://placehold.co/680x480/0a3d62/3498db?text=Project+03" alt="Project">
+                <div class="port-card-body">
+                    <h3>Mobile App</h3>
+                    <p>End-to-end design for a social media app focused on the Hive community.</p>
+                </div>
+            </div>
+            <div class="port-card">
+                <img src="https://placehold.co/680x480/1e3a2b/27ae60?text=Project+04" alt="Project">
+                <div class="port-card-body">
+                    <h3>Editorial Design</h3>
+                    <p>Art direction and layout for a digital magazine about decentralized technologies.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="port-contact" id="contact">
+        <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="@{{USERNAME}}" style="width:100px; height:100px; border-radius:50%; object-fit:cover; margin-bottom:20px;">
+        <h2>Let's Work Together</h2>
+        <p>Have a project in mind? I'd love to hear about it.</p>
+        <a href="mailto:hello@example.com" class="email-link">Get In Touch</a>
+    </section>
+</body>
+</html>

@@ -761,6 +761,12 @@
         var hasUnsavedChanges = false;
         var isSaving = false;
         var pageBodyAttrs = '';
+        var loggedInUsername = '';
+
+        // Fetch logged-in username for avatar blocks
+        fetch('/admin/api/me').then(function(r) { return r.json(); }).then(function(u) {
+            loggedInUsername = u.username || '';
+        }).catch(function() {});
 
         // Initialize GrapesJS with minimal UI (we build our own panels)
         var editor = grapesjs.init({
@@ -905,6 +911,15 @@
                     content: '<img src="https://placehold.co/600x400/eee/999?text=Your+Image" style="max-width:100%; border-radius:8px;" />'
                 },
                 {
+                    id: 'hive-avatar',
+                    label: 'Avatar',
+                    icon: '<svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="9" r="4" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 4-7 8-7s8 3 8 7" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>',
+                    content: function() {
+                        var u = loggedInUsername || 'username';
+                        return '<img src="https://images.hive.blog/u/' + u + '/avatar/original" alt="@' + u + '" style="width:120px; height:120px; border-radius:50%; object-fit:cover;" />';
+                    }
+                },
+                {
                     id: 'heading',
                     label: 'Heading',
                     icon: '<svg viewBox="0 0 24 24" width="32" height="32"><text x="3" y="18" font-size="18" font-weight="bold" fill="currentColor">H</text></svg>',
@@ -1000,10 +1015,14 @@
         function renderBlocks(containerId, blocks) {
             var container = document.getElementById(containerId);
             blocks.forEach(function(block) {
+                var getContent = function() {
+                    return typeof block.content === 'function' ? block.content() : block.content;
+                };
+
                 // Register in GrapesJS block manager
                 editor.BlockManager.add(block.id, {
                     label: block.label,
-                    content: block.content,
+                    content: getContent(),
                     category: 'Custom'
                 });
 
@@ -1015,13 +1034,13 @@
 
                 // Drag support
                 el.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/html', block.content);
+                    e.dataTransfer.setData('text/html', getContent());
                     e.dataTransfer.effectAllowed = 'copy';
                 });
 
                 // Click to append
                 el.addEventListener('click', function() {
-                    editor.addComponents(block.content);
+                    editor.addComponents(getContent());
                     hasUnsavedChanges = true;
                 });
 

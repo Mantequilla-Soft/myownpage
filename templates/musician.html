@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.music-hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(180deg, #0d0d0d 0%, #1a0a2e 50%, #0d0d0d 100%);
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+}
+.music-hero::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(155,89,182,0.15) 0%, transparent 70%);
+    transform: translate(-50%, -50%);
+}
+.music-hero h1 {
+    font-size: 80px;
+    color: #fff;
+    font-weight: 900;
+    letter-spacing: -3px;
+    text-transform: uppercase;
+    position: relative;
+    margin-bottom: 16px;
+}
+.music-hero .genre {
+    color: #9b59b6;
+    font-size: 16px;
+    letter-spacing: 6px;
+    text-transform: uppercase;
+    margin-bottom: 40px;
+}
+.music-hero .actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.music-hero .actions a {
+    padding: 14px 36px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.2s;
+}
+.music-hero .btn-primary-music {
+    background: #9b59b6;
+    color: white;
+    border: 2px solid #9b59b6;
+}
+.music-hero .btn-outline-music {
+    background: transparent;
+    color: white;
+    border: 2px solid rgba(255,255,255,0.3);
+}
+.music-hero .btn-outline-music:hover {
+    border-color: #fff;
+}
+.music-section {
+    padding: 80px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.music-section h2 {
+    font-size: 32px;
+    margin-bottom: 40px;
+    color: #1a1a1a;
+    text-align: center;
+}
+.music-video {
+    background: #0d0d0d;
+    padding: 60px 20px;
+}
+.music-video .video-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+    position: relative;
+    padding-bottom: 56.25%;
+    height: 0;
+}
+.music-video .video-wrap iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+.music-video h2 {
+    color: #fff;
+    text-align: center;
+    font-size: 32px;
+    margin-bottom: 30px;
+}
+.tour-list {
+    list-style: none;
+    padding: 0;
+}
+.tour-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 1px solid #e0e0e0;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+.tour-date {
+    font-weight: 700;
+    color: #9b59b6;
+    font-size: 16px;
+    min-width: 140px;
+}
+.tour-venue {
+    flex: 1;
+    font-size: 16px;
+    color: #333;
+}
+.tour-city {
+    color: #888;
+    font-size: 14px;
+}
+.tour-ticket {
+    padding: 8px 24px;
+    background: #9b59b6;
+    color: white;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.music-bio {
+    background: #f8f6fa;
+    padding: 80px 20px;
+}
+.music-bio-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    gap: 40px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.music-bio-inner img {
+    width: 300px;
+    height: 380px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.music-bio-text h2 {
+    font-size: 32px;
+    margin-bottom: 16px;
+}
+.music-bio-text p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #555;
+}
+.music-footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: #0d0d0d;
+    color: #555;
+    font-size: 14px;
+}
+    </style>
+</head>
+<body>
+    <section class="music-hero">
+        <div>
+            <h1>{{USERNAME}}</h1>
+            <p class="genre">Electronic &middot; Ambient &middot; Experimental</p>
+            <div class="actions">
+                <a href="#music" class="btn-primary-music">Listen Now</a>
+                <a href="#tour" class="btn-outline-music">Tour Dates</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="music-video" id="music">
+        <h2>Latest Release</h2>
+        <div class="video-wrap">
+            <iframe src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe>
+        </div>
+    </section>
+
+    <section class="music-section" id="tour">
+        <h2>Tour Dates</h2>
+        <ul class="tour-list">
+            <li class="tour-item">
+                <span class="tour-date">Mar 15, 2026</span>
+                <span class="tour-venue">The Electric Ballroom</span>
+                <span class="tour-city">London, UK</span>
+                <a href="#" class="tour-ticket">Tickets</a>
+            </li>
+            <li class="tour-item">
+                <span class="tour-date">Mar 22, 2026</span>
+                <span class="tour-venue">Berghain</span>
+                <span class="tour-city">Berlin, DE</span>
+                <a href="#" class="tour-ticket">Tickets</a>
+            </li>
+            <li class="tour-item">
+                <span class="tour-date">Apr 5, 2026</span>
+                <span class="tour-venue">Webster Hall</span>
+                <span class="tour-city">New York, US</span>
+                <a href="#" class="tour-ticket">Tickets</a>
+            </li>
+            <li class="tour-item">
+                <span class="tour-date">Apr 19, 2026</span>
+                <span class="tour-venue">Fabric</span>
+                <span class="tour-city">London, UK</span>
+                <a href="#" class="tour-ticket">Sold Out</a>
+            </li>
+        </ul>
+    </section>
+
+    <section class="music-bio">
+        <div class="music-bio-inner">
+            <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="Artist photo">
+            <div class="music-bio-text">
+                <h2>About</h2>
+                <p>Based in the digital ether, blending organic textures with synthetic soundscapes. Each track is an exploration of space and time, released first on the Hive blockchain where art meets decentralization.</p>
+                <p style="margin-top:16px;">Follow me on Hive: <a href="#" style="color:#9b59b6; font-weight:600;">@{{USERNAME}}</a></p>
+            </div>
+        </div>
+    </section>
+
+    <footer class="music-footer">
+        <p>&copy; 2026 {{USERNAME}} &middot; Built with My Own Page</p>
+    </footer>
+</body>
+</html>

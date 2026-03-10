@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+    padding: 40px 20px;
+}
+.linktree {
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+}
+.linktree-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.2);
+    margin: 0 auto 20px;
+    object-fit: cover;
+}
+.linktree h1 {
+    color: #fff;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 6px;
+}
+.linktree .bio {
+    color: #a8b4c4;
+    font-size: 15px;
+    margin-bottom: 32px;
+    line-height: 1.5;
+}
+.linktree-links {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+.link-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 24px;
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    color: #fff;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+.link-item:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+.link-item .link-icon {
+    font-size: 20px;
+    flex-shrink: 0;
+}
+.link-item.featured {
+    background: linear-gradient(135deg, #6c5ce7, #a855f7);
+    border-color: transparent;
+    font-weight: 700;
+}
+.link-item.featured:hover {
+    background: linear-gradient(135deg, #5a4bd1, #9645e5);
+}
+.linktree-social {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+.social-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #a8b4c4;
+    text-decoration: none;
+    font-size: 18px;
+    transition: all 0.2s;
+}
+.social-icon:hover {
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+}
+.linktree-footer {
+    color: #4a5568;
+    font-size: 12px;
+}
+.linktree-footer a {
+    color: #6c5ce7;
+    text-decoration: none;
+}
+    </style>
+</head>
+<body>
+    <div class="linktree">
+        <img class="linktree-avatar" src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="Avatar">
+        <h1>@{{USERNAME}}</h1>
+        <p class="bio">Creator, builder, dreamer. All my important links in one place.</p>
+
+        <div class="linktree-links">
+            <a href="#" class="link-item featured">
+                <span class="link-icon">&#x2B21;</span>
+                My Hive Blog
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x1f4f7;</span>
+                Photography Portfolio
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x1f3b5;</span>
+                Latest Music
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x1f4f9;</span>
+                YouTube Channel
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x1f6d2;</span>
+                Shop / Merch
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x2615;</span>
+                Buy Me a Coffee
+            </a>
+            <a href="#" class="link-item">
+                <span class="link-icon">&#x1f4e7;</span>
+                Contact Me
+            </a>
+        </div>
+
+        <div class="linktree-social">
+            <a href="#" class="social-icon" title="Hive">&#x2B21;</a>
+            <a href="#" class="social-icon" title="Twitter">&#x1D54F;</a>
+            <a href="#" class="social-icon" title="Instagram">&#x1f4f7;</a>
+            <a href="#" class="social-icon" title="YouTube">&#x25B6;</a>
+            <a href="#" class="social-icon" title="Discord">&#x1f4ac;</a>
+        </div>
+
+        <div class="linktree-footer">
+            Built with <a href="#">My Own Page</a>
+        </div>
+    </div>
+</body>
+</html>

@@ -192,9 +192,75 @@
             max-width: 500px;
             width: 90%;
         }
-        
+
+        .modal-content.modal-wide {
+            max-width: 920px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
         .modal-content h2 {
-            margin-bottom: 20px;
+            margin-bottom: 8px;
+        }
+
+        .modal-subtitle {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 24px;
+        }
+
+        .template-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+            gap: 12px;
+            margin-bottom: 28px;
+        }
+
+        .template-card {
+            border: 2px solid #e8e8e8;
+            border-radius: 12px;
+            padding: 18px 12px 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .template-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102,126,234,0.12);
+        }
+
+        .template-card.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+
+        .template-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+            display: block;
+            line-height: 1;
+        }
+
+        .template-swatch {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            margin-bottom: 12px;
+        }
+
+        .template-name {
+            font-weight: 600;
+            font-size: 13px;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .template-desc {
+            font-size: 11px;
+            color: #999;
+            line-height: 1.4;
         }
         
         .form-group {
@@ -227,9 +293,12 @@
 </head>
 <body>
     <div class="header">
-        <div>
-            <h1>My Own Page</h1>
-            <span id="headerUsername" style="color:#999; font-size:14px;"></span>
+        <div style="display:flex; align-items:center; gap:14px;">
+            <img id="headerAvatar" src="" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none; border:2px solid #e0e0e0;">
+            <div>
+                <h1>My Own Page</h1>
+                <span id="headerUsername" style="color:#999; font-size:14px;"></span>
+            </div>
         </div>
         <div class="header-actions">
             <a href="#" id="viewSiteLink" class="btn btn-secondary" target="_blank">View Site</a>
@@ -276,8 +345,12 @@
     
     <!-- New Page Modal -->
     <div id="newPageModal" class="modal">
-        <div class="modal-content">
+        <div class="modal-content modal-wide">
             <h2>Create New Page</h2>
+            <p class="modal-subtitle">Pick a template to get started quickly, or start from a blank page.</p>
+            <div id="templateGrid" class="template-grid">
+                <!-- Populated by JS -->
+            </div>
             <form id="newPageForm">
                 <div class="form-group">
                     <label for="pageTitle">Page Title</label>
@@ -305,6 +378,10 @@
                 if (!resp.ok) return;
                 const user = await resp.json();
                 document.getElementById('headerUsername').textContent = '@' + user.username;
+                var avatar = document.getElementById('headerAvatar');
+                avatar.src = 'https://images.hive.blog/u/' + user.username + '/avatar/original';
+                avatar.alt = '@' + user.username;
+                avatar.style.display = 'block';
                 document.getElementById('siteUrl').textContent = user.siteUrl;
                 document.getElementById('viewSiteLink').href = '/site/' + user.username;
                 const usedMB = (user.storageUsed / 1024 / 1024).toFixed(1);
@@ -359,8 +436,36 @@
             document.getElementById('totalImages').textContent = data.imageCount || 0;
         }
         
-        function showNewPageModal() {
+        var templatesLoaded = false;
+
+        async function showNewPageModal() {
             document.getElementById('newPageModal').classList.add('show');
+            document.getElementById('pageTemplate').value = 'blank';
+
+            if (!templatesLoaded) {
+                try {
+                    var resp = await fetch('/admin/api/templates');
+                    var data = await resp.json();
+                    var grid = document.getElementById('templateGrid');
+                    grid.innerHTML = data.templates.map(function(t) {
+                        return '<div class="template-card' + (t.id === 'blank' ? ' selected' : '') + '" data-template="' + t.id + '" onclick="selectTemplate(this, \'' + t.id + '\')">'
+                            + '<div class="template-swatch" style="background:' + t.color + ';"></div>'
+                            + '<span class="template-icon">' + t.icon + '</span>'
+                            + '<div class="template-name">' + t.name + '</div>'
+                            + '<div class="template-desc">' + t.description + '</div>'
+                            + '</div>';
+                    }).join('');
+                    templatesLoaded = true;
+                } catch(e) {
+                    console.error('Error loading templates:', e);
+                }
+            }
+        }
+
+        function selectTemplate(el, id) {
+            document.querySelectorAll('.template-card').forEach(function(c) { c.classList.remove('selected'); });
+            el.classList.add('selected');
+            document.getElementById('pageTemplate').value = id;
         }
         
         function closeNewPageModal() {

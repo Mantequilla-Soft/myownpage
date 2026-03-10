@@ -1,33 +1,741 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Own Page — Your website on the Hive blockchain</title>
+    <meta name="description" content="Build your own website on the Hive blockchain. No coding needed. Visual editor, Hive Keychain login, custom templates. Powered by Snapie.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
+        :root {
+            --bg: #06080d;
+            --surface: #0d1117;
+            --surface-2: #151b26;
+            --border: #1c2333;
+            --text: #e6edf3;
+            --text-muted: #7d8590;
+            --accent: #e84142;
+            --accent-glow: rgba(232, 65, 66, 0.15);
+            --green: #3fb950;
+            --blue: #58a6ff;
+            --purple: #bc8cff;
+        }
 
+        body {
+            font-family: 'DM Sans', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
+        a { color: inherit; text-decoration: none; }
 
+        /* ---- NAV ---- */
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 18px 40px;
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+        .nav-brand {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .nav-brand span { color: var(--text-muted); font-weight: 400; font-size: 14px; margin-left: 8px; }
+        .nav-links { display: flex; gap: 28px; align-items: center; }
+        .nav-links a { color: var(--text-muted); font-size: 14px; font-weight: 500; transition: color 0.2s; }
+        .nav-links a:hover { color: var(--text); }
+        .nav-cta {
+            padding: 8px 20px;
+            background: var(--accent);
+            color: #fff !important;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .nav-cta:hover { box-shadow: 0 4px 20px var(--accent-glow); transform: translateY(-1px); }
 
+        /* ---- HERO ---- */
+        .hero {
+            text-align: center;
+            padding: 120px 20px 80px;
+            max-width: 860px;
+            margin: 0 auto;
+            position: relative;
+        }
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -200px; left: 50%; transform: translateX(-50%);
+            width: 800px; height: 800px;
+            background: radial-gradient(circle, var(--accent-glow) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-bottom: 28px;
+        }
+        .hero-badge .dot {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+        .hero h1 {
+            font-size: 64px;
+            font-weight: 800;
+            letter-spacing: -2.5px;
+            line-height: 1.08;
+            margin-bottom: 24px;
+            position: relative;
+        }
+        .hero h1 .highlight { color: var(--accent); }
+        .hero p {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 560px;
+            margin: 0 auto 40px;
+            line-height: 1.6;
+        }
+        .hero-actions {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-hero {
+            padding: 16px 40px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: inherit;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary-hero {
+            background: var(--accent);
+            color: #fff;
+        }
+        .btn-primary-hero:hover {
+            box-shadow: 0 8px 30px var(--accent-glow);
+            transform: translateY(-2px);
+        }
+        .btn-ghost {
+            background: var(--surface-2);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+        .btn-ghost:hover {
+            border-color: #3a4555;
+            background: #1a2233;
+        }
+        .hero-note {
+            margin-top: 20px;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
 
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>My Website</title>
-  <meta name="description" content="Welcome to my website.">
-  <link href="/css/styles.css" rel="stylesheet">
+        /* ---- BROWSER MOCKUP ---- */
+        .browser-mockup {
+            max-width: 1000px;
+            margin: 60px auto 0;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
+        }
+        .browser-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--surface-2);
+            border-bottom: 1px solid var(--border);
+        }
+        .browser-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #3a4050;
+        }
+        .browser-url {
+            flex: 1;
+            margin-left: 8px;
+            padding: 5px 12px;
+            background: var(--bg);
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+        }
+        .browser-body {
+            height: 400px;
+            background: linear-gradient(180deg, #0f1520, #1a1a2e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+        }
+        .browser-body h2 {
+            font-size: 36px;
+            color: #fff;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+        .browser-body p {
+            color: #6b7280;
+            font-size: 16px;
+        }
 
+        /* ---- FEATURES ---- */
+        .features {
+            padding: 120px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .features-header {
+            text-align: center;
+            margin-bottom: 64px;
+        }
+        .features-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+        .features-header p {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 32px 28px;
+            transition: all 0.3s;
+        }
+        .feature-card:hover {
+            border-color: #2a3545;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+        }
+        .feature-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
 
+        /* ---- TEMPLATES SHOWCASE ---- */
+        .templates-section {
+            padding: 100px 20px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+        }
+        .templates-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+        .templates-header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+        .templates-header h2 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+        .templates-header p {
+            color: var(--text-muted);
+            font-size: 18px;
+        }
+        .templates-scroll {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 16px;
+        }
+        .template-preview {
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px 16px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .template-preview:hover {
+            border-color: var(--accent);
+            transform: translateY(-4px);
+        }
+        .template-preview .tp-icon {
+            font-size: 32px;
+            margin-bottom: 10px;
+            display: block;
+        }
+        .template-preview .tp-swatch {
+            width: 100%;
+            height: 3px;
+            border-radius: 2px;
+            margin-bottom: 12px;
+        }
+        .template-preview .tp-name {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .template-preview .tp-desc {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
 
+        /* ---- HOW IT WORKS ---- */
+        .how-section {
+            padding: 120px 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .how-section h2 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            text-align: center;
+            margin-bottom: 64px;
+        }
+        .how-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 48px;
+        }
+        .how-step {
+            display: flex;
+            gap: 28px;
+            align-items: flex-start;
+        }
+        .how-num {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--accent);
+            flex-shrink: 0;
+        }
+        .how-text h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        .how-text p {
+            font-size: 16px;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
 
+        /* ---- PRICING ---- */
+        .pricing {
+            padding: 100px 20px;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+        }
+        .pricing-inner {
+            max-width: 500px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .pricing h2 {
+            font-size: 42px;
+            font-weight: 800;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+        .pricing .pricing-sub {
+            color: var(--text-muted);
+            font-size: 18px;
+            margin-bottom: 40px;
+        }
+        .price-card {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            padding: 40px 32px;
+            text-align: center;
+        }
+        .price-amount {
+            font-size: 56px;
+            font-weight: 800;
+            letter-spacing: -2px;
+            margin-bottom: 4px;
+        }
+        .price-amount .currency {
+            font-size: 24px;
+            font-weight: 600;
+            vertical-align: super;
+            color: var(--accent);
+        }
+        .price-period {
+            color: var(--text-muted);
+            font-size: 16px;
+            margin-bottom: 28px;
+        }
+        .price-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 32px;
+        }
+        .price-features li {
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 15px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .price-features li:last-child { border-bottom: none; }
+        .price-check {
+            color: var(--green);
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .price-cta {
+            display: block;
+            padding: 16px;
+            background: var(--accent);
+            color: #fff;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+        .price-cta:hover {
+            box-shadow: 0 6px 24px var(--accent-glow);
+            transform: translateY(-2px);
+        }
 
+        /* ---- HIVE CALLOUT ---- */
+        .hive-callout {
+            padding: 100px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .hive-callout .hive-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+            display: block;
+        }
+        .hive-callout h2 {
+            font-size: 36px;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 16px;
+        }
+        .hive-callout p {
+            font-size: 18px;
+            color: var(--text-muted);
+            line-height: 1.7;
+            max-width: 600px;
+            margin: 0 auto;
+        }
 
+        /* ---- FOOTER ---- */
+        .footer {
+            padding: 40px 20px;
+            border-top: 1px solid var(--border);
+            text-align: center;
+        }
+        .footer p {
+            color: var(--text-muted);
+            font-size: 13px;
+        }
+        .footer a { color: var(--accent); }
 
-
-
-
-
-<style>
-#about{max-width:900px;margin-top:0px;margin-right:auto;margin-bottom:0px;margin-left:auto;}
-</style>
+        /* ---- RESPONSIVE ---- */
+        @media (max-width: 900px) {
+            .hero h1 { font-size: 42px; }
+            .features-grid { grid-template-columns: 1fr; }
+            .templates-scroll { grid-template-columns: repeat(2, 1fr); }
+            .nav { padding: 16px 20px; }
+            .nav-links { gap: 16px; }
+        }
+        @media (max-width: 600px) {
+            .hero h1 { font-size: 32px; }
+            .hero p { font-size: 16px; }
+            .features-header h2, .templates-header h2, .how-section h2, .pricing h2 { font-size: 28px; }
+            .templates-scroll { grid-template-columns: repeat(2, 1fr); }
+            .browser-body { height: 250px; }
+            .browser-body h2 { font-size: 24px; }
+            .nav-links a:not(.nav-cta) { display: none; }
+        }
+    </style>
 </head>
 <body>
-<header><nav class="nav"><a href="/" class="nav-brand">My Website</a><div class="nav-links"><a href="/">Home</a><a href="/html/about.html" id="ijqxv">About</a><a href="#contact">Contact</a></div></nav></header><section class="hero"><div><h1>Welcome to Your Website</h1><p>This is your starting point. Edit this page from the admin panel to make it your own.</p><a href="/admin/login" class="btn btn-primary">Go to Admin Panel</a></div></section><section id="about"><h2>About</h2><p>Use the page builder to customize this page, add new pages, and manage your content.</p></section><footer class="footer"><p>© 2026 My Website. All rights reserved.</p></footer>
+
+    <!-- NAV -->
+    <nav class="nav">
+        <a href="/" class="nav-brand">My Own Page <span>by Snapie</span></a>
+        <div class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#templates">Templates</a>
+            <a href="#pricing">Pricing</a>
+            <a href="/admin/login" class="nav-cta">Get Started</a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+        <div class="hero-badge">
+            <span class="dot"></span>
+            Built on the Hive blockchain
+        </div>
+        <h1>Your own website.<br><span class="highlight">Your own rules.</span></h1>
+        <p>Build a beautiful, permanent website with a visual editor. No coding. Login with Hive Keychain. Your content, your keys, your page.</p>
+        <div class="hero-actions">
+            <a href="/admin/login" class="btn-hero btn-primary-hero">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Start Building — Free
+            </a>
+            <a href="#features" class="btn-hero btn-ghost">See How It Works</a>
+        </div>
+        <p class="hero-note">No credit card. No email. Just your Hive account.</p>
+    </section>
+
+    <!-- BROWSER MOCKUP -->
+    <div class="browser-mockup">
+        <div class="browser-bar">
+            <span class="browser-dot"></span>
+            <span class="browser-dot"></span>
+            <span class="browser-dot"></span>
+            <div class="browser-url">yourname.snapie.io</div>
+        </div>
+        <div class="browser-body">
+            <div>
+                <h2>Drag. Drop. Publish.</h2>
+                <p>Visual builder with real-time editing — like the old days, but better.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- FEATURES -->
+    <section class="features" id="features">
+        <div class="features-header">
+            <h2>Everything you need</h2>
+            <p>A full website builder designed for the Hive community.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(232,65,66,0.12);">&#x1f511;</div>
+                <h3>Hive Keychain Login</h3>
+                <p>No passwords, no email. Sign in with your Hive account and your site is ready instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(88,166,255,0.12);">&#x1f3a8;</div>
+                <h3>Visual Page Builder</h3>
+                <p>Drag-and-drop editor with inline text editing. Click on any text, type, see it change. Like Dreamweaver, but modern.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(188,140,255,0.12);">&#x1f4e6;</div>
+                <h3>10 Starter Templates</h3>
+                <p>Blog, portfolio, musician, restaurant, link-in-bio, and more. Pick one, customize it, publish.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(63,185,80,0.12);">&#x2B21;</div>
+                <h3>Hive Components</h3>
+                <p>Embed your Hive blog feed, posts, comments, and witness info as native components on your page.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(232,150,65,0.12);">&#x1f310;</div>
+                <h3>Your Subdomain</h3>
+                <p>Get yourname.snapie.io instantly. Custom domains coming soon.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" style="background: rgba(255,100,100,0.12);">&#x1f4f1;</div>
+                <h3>Mobile Ready</h3>
+                <p>All templates and pages are responsive out of the box. Looks great on every screen.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- TEMPLATES -->
+    <section class="templates-section" id="templates">
+        <div class="templates-inner">
+            <div class="templates-header">
+                <h2>Start with a template</h2>
+                <p>Pick one, make it yours in minutes.</p>
+            </div>
+            <div class="templates-scroll">
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #f59e0b;"></div>
+                    <span class="tp-icon">✍️</span>
+                    <div class="tp-name">Blogger</div>
+                    <div class="tp-desc">Bio & Hive feed</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #8b5cf6;"></div>
+                    <span class="tp-icon">🎨</span>
+                    <div class="tp-name">Portfolio</div>
+                    <div class="tp-desc">Project gallery</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #ec4899;"></div>
+                    <span class="tp-icon">🎵</span>
+                    <div class="tp-name">Musician</div>
+                    <div class="tp-desc">Music & tour dates</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #14b8a6;"></div>
+                    <span class="tp-icon">📷</span>
+                    <div class="tp-name">Photographer</div>
+                    <div class="tp-desc">Image gallery</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #7c3aed;"></div>
+                    <span class="tp-icon">🔗</span>
+                    <div class="tp-name">Link in Bio</div>
+                    <div class="tp-desc">Linktree-style</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #3b82f6;"></div>
+                    <span class="tp-icon">🏪</span>
+                    <div class="tp-name">Business</div>
+                    <div class="tp-desc">Services & reviews</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #6366f1;"></div>
+                    <span class="tp-icon">📋</span>
+                    <div class="tp-name">CV / Resume</div>
+                    <div class="tp-desc">Skills & timeline</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #d97706;"></div>
+                    <span class="tp-icon">🍽️</span>
+                    <div class="tp-name">Restaurant</div>
+                    <div class="tp-desc">Menu & hours</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #ef4444;"></div>
+                    <span class="tp-icon">🎬</span>
+                    <div class="tp-name">Vlogger</div>
+                    <div class="tp-desc">Videos & content</div>
+                </div>
+                <div class="template-preview">
+                    <div class="tp-swatch" style="background: #059669;"></div>
+                    <span class="tp-icon">🏛️</span>
+                    <div class="tp-name">Community</div>
+                    <div class="tp-desc">Witness & DAO</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section class="how-section" id="how">
+        <h2>Up and running in 60 seconds</h2>
+        <div class="how-steps">
+            <div class="how-step">
+                <div class="how-num">1</div>
+                <div class="how-text">
+                    <h3>Login with Hive Keychain</h3>
+                    <p>No signup form, no email, no password. If you have a Hive account, you're in. Keychain signs a challenge — that's your identity, proven cryptographically.</p>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">2</div>
+                <div class="how-text">
+                    <h3>Pick a template and customize</h3>
+                    <p>Choose from 10 professionally designed templates. Click any text to edit it directly — like a word processor. Drag and drop images, sections, and Hive components.</p>
+                </div>
+            </div>
+            <div class="how-step">
+                <div class="how-num">3</div>
+                <div class="how-text">
+                    <h3>Publish to your subdomain</h3>
+                    <p>Your site goes live at yourname.snapie.io. Share it, link it in your Hive profile, use it as your home on the internet.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PRICING -->
+    <section class="pricing" id="pricing">
+        <div class="pricing-inner">
+            <h2>Simple pricing</h2>
+            <p class="pricing-sub">One plan. Everything included. Paid in HBD.</p>
+            <div class="price-card">
+                <div class="price-amount"><span class="currency">HBD</span> 2</div>
+                <div class="price-period">per month</div>
+                <ul class="price-features">
+                    <li><span class="price-check">&#10003;</span> Visual page builder</li>
+                    <li><span class="price-check">&#10003;</span> Unlimited pages</li>
+                    <li><span class="price-check">&#10003;</span> 50 MB image storage</li>
+                    <li><span class="price-check">&#10003;</span> All 10 templates</li>
+                    <li><span class="price-check">&#10003;</span> Hive blog & witness components</li>
+                    <li><span class="price-check">&#10003;</span> yourname.snapie.io subdomain</li>
+                    <li><span class="price-check">&#10003;</span> No ads, ever</li>
+                </ul>
+                <a href="/admin/login" class="price-cta">Get Started</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- HIVE CALLOUT -->
+    <section class="hive-callout">
+        <span class="hive-icon">&#x2B21;</span>
+        <h2>Built for Hive. Built on Hive.</h2>
+        <p>Your Hive blog feed, posts, comments, and witness info — all embeddable as native components. Log in with your keys, not a password. This is web publishing the way it should be.</p>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+        <p>My Own Page &middot; Powered by <a href="https://hive.blog/@snapie" target="_blank">@Snapie</a> &middot; Built on the Hive blockchain</p>
+    </footer>
+
 </body>
 </html>

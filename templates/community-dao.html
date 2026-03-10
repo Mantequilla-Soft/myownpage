@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.dao-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: #0a0e17;
+    border-bottom: 1px solid #1a2030;
+}
+.dao-nav .brand {
+    color: #10b981;
+    font-size: 20px;
+    font-weight: 700;
+    text-decoration: none;
+}
+.dao-nav .links { display: flex; gap: 24px; }
+.dao-nav .links a {
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+}
+.dao-nav .links a:hover { color: #10b981; }
+.dao-hero {
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: linear-gradient(180deg, #0a0e17, #0f1a2e);
+    padding: 80px 20px;
+}
+.dao-hero h1 {
+    font-size: 56px;
+    color: #fff;
+    font-weight: 800;
+    letter-spacing: -2px;
+    margin-bottom: 20px;
+}
+.dao-hero h1 span { color: #10b981; }
+.dao-hero p {
+    color: #6b7280;
+    font-size: 20px;
+    max-width: 600px;
+    margin: 0 auto 32px;
+    line-height: 1.6;
+}
+.dao-hero .actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+.dao-hero .actions a {
+    padding: 14px 36px;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 15px;
+    border-radius: 8px;
+    transition: all 0.2s;
+}
+.dao-btn-primary {
+    background: #10b981;
+    color: #fff;
+}
+.dao-btn-primary:hover { background: #059669; }
+.dao-btn-outline {
+    background: transparent;
+    color: #10b981;
+    border: 2px solid #10b981;
+}
+.dao-btn-outline:hover { background: rgba(16,185,129,0.1); }
+.dao-stats {
+    padding: 60px 20px;
+    background: #0f1520;
+    border-top: 1px solid #1a2030;
+    border-bottom: 1px solid #1a2030;
+}
+.dao-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 24px;
+    max-width: 900px;
+    margin: 0 auto;
+    text-align: center;
+}
+.dao-stat-num {
+    font-size: 42px;
+    font-weight: 800;
+    color: #10b981;
+    margin-bottom: 4px;
+}
+.dao-stat-label {
+    font-size: 14px;
+    color: #6b7280;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+.dao-section {
+    padding: 80px 20px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+.dao-section h2 {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+.dao-section .subtitle {
+    color: #666;
+    margin-bottom: 40px;
+    font-size: 16px;
+}
+.dao-witness {
+    padding: 80px 20px;
+    background: #f0fdf4;
+}
+.dao-witness h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+.dao-witness .subtitle {
+    text-align: center;
+    color: #666;
+    margin-bottom: 40px;
+}
+.dao-witness-widget {
+    max-width: 800px;
+    margin: 0 auto;
+}
+.dao-blog-section {
+    padding: 80px 20px;
+    max-width: 900px;
+    margin: 0 auto;
+}
+.dao-blog-section h2 {
+    font-size: 32px;
+    margin-bottom: 12px;
+    color: #1a1a1a;
+}
+.dao-blog-section .subtitle {
+    color: #666;
+    margin-bottom: 32px;
+}
+.dao-values {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 24px;
+}
+.dao-value-card {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 28px;
+}
+.dao-value-card h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #111;
+}
+.dao-value-card p {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+}
+.dao-value-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+.dao-footer {
+    text-align: center;
+    padding: 40px 20px;
+    background: #0a0e17;
+    color: #4a5568;
+    font-size: 14px;
+}
+    </style>
+</head>
+<body>
+    <nav class="dao-nav">
+        <a href="/" class="brand">{{USERNAME}} Community</a>
+        <div class="links">
+            <a href="#about">About</a>
+            <a href="#witness">Witness</a>
+            <a href="#updates">Updates</a>
+        </div>
+    </nav>
+
+    <section class="dao-hero">
+        <div>
+            <h1>Decentralized.<br><span>Community-Driven.</span></h1>
+            <p>We're building the future of governance on Hive. Transparent, fair, and powered by the community.</p>
+            <div class="actions">
+                <a href="#witness" class="dao-btn-primary">Vote for Witness</a>
+                <a href="#updates" class="dao-btn-outline">Read Updates</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="dao-stats">
+        <div class="dao-stats-grid">
+            <div>
+                <div class="dao-stat-num">1.2K</div>
+                <div class="dao-stat-label">Members</div>
+            </div>
+            <div>
+                <div class="dao-stat-num">340</div>
+                <div class="dao-stat-label">Proposals Voted</div>
+            </div>
+            <div>
+                <div class="dao-stat-num">99.9%</div>
+                <div class="dao-stat-label">Uptime</div>
+            </div>
+            <div>
+                <div class="dao-stat-num">24/7</div>
+                <div class="dao-stat-label">Node Operations</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="dao-section" id="about">
+        <h2>Our Mission</h2>
+        <p class="subtitle">What we stand for and why we do what we do</p>
+        <div class="dao-values">
+            <div class="dao-value-card">
+                <div class="dao-value-icon">&#x1f310;</div>
+                <h3>Decentralization</h3>
+                <p>We believe power should be distributed. Our community operates through transparent on-chain governance with no single point of control.</p>
+            </div>
+            <div class="dao-value-card">
+                <div class="dao-value-icon">&#x1f91d;</div>
+                <h3>Community First</h3>
+                <p>Every decision is made with the community in mind. We actively listen, engage, and build tools that serve real needs.</p>
+            </div>
+            <div class="dao-value-card">
+                <div class="dao-value-icon">&#x1f527;</div>
+                <h3>Infrastructure</h3>
+                <p>We run reliable Hive nodes and develop open-source tools that strengthen the entire ecosystem.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="dao-witness" id="witness">
+        <h2>Witness Information</h2>
+        <p class="subtitle">Support our work by voting for our witness</p>
+        <div class="dao-witness-widget">
+            <hive-witness account="{{USERNAME}}" theme="auto"></hive-witness>
+        </div>
+    </section>
+
+    <section class="dao-blog-section" id="updates">
+        <h2>Community Updates</h2>
+        <p class="subtitle">Latest posts and announcements</p>
+        <hive-blog account="{{USERNAME}}" posts-per-page="5" theme="auto"></hive-blog>
+    </section>
+
+    <footer class="dao-footer">
+        <p>&copy; 2026 @{{USERNAME}} Community &middot; Built with My Own Page &middot; Powered by Hive</p>
+    </footer>
+</body>
+</html>

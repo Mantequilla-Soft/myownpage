@@ -14,7 +14,22 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 const SNAPIE_DOMAIN = process.env.SNAPIE_DOMAIN || 'snapie.io';
 const TENANTS_DIR = path.join(__dirname, 'tenants');
+const TEMPLATES_DIR = path.join(__dirname, 'templates');
 const MAX_STORAGE_BYTES = 50 * 1024 * 1024; // 50MB per tenant
+
+const TEMPLATES = [
+  { id: 'blank', name: 'Blank Page', description: 'Start from scratch', icon: '📄', color: '#667eea' },
+  { id: 'blogger', name: 'Blogger', description: 'Hero, bio & Hive blog feed', icon: '✍️', color: '#f59e0b' },
+  { id: 'portfolio', name: 'Portfolio', description: 'Project gallery & contact', icon: '🎨', color: '#8b5cf6' },
+  { id: 'musician', name: 'Musician', description: 'Cover art, video & tour dates', icon: '🎵', color: '#ec4899' },
+  { id: 'vlogger', name: 'Vlogger', description: 'Video hero & content grid', icon: '🎬', color: '#ef4444' },
+  { id: 'photographer', name: 'Photographer', description: 'Minimal image gallery', icon: '📷', color: '#14b8a6' },
+  { id: 'small-business', name: 'Small Business', description: 'Services, reviews & contact', icon: '🏪', color: '#3b82f6' },
+  { id: 'personal-cv', name: 'Personal / CV', description: 'Resume, skills & timeline', icon: '📋', color: '#6366f1' },
+  { id: 'restaurant', name: 'Restaurant', description: 'Menu, hours & location', icon: '🍽️', color: '#d97706' },
+  { id: 'community-dao', name: 'Community / DAO', description: 'Witness, governance & blog', icon: '🏛️', color: '#059669' },
+  { id: 'link-in-bio', name: 'Link in Bio', description: 'Avatar & stacked links', icon: '🔗', color: '#7c3aed' },
+];
 
 // ==================== DATABASE SETUP ====================
 
@@ -144,6 +159,7 @@ async function ensureTenantDirs(username) {
 <body>
     <section style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; background:linear-gradient(135deg, #1a1a2e, #16213e); padding:60px 20px;">
         <div style="max-width:700px;">
+            <img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}" style="width:120px; height:120px; border-radius:50%; border:4px solid rgba(255,255,255,0.15); margin-bottom:24px; object-fit:cover;">
             <h1 style="color:white; font-size:48px; margin-bottom:20px;">Welcome to @${username}'s site</h1>
             <p style="color:#a8b4c4; font-size:20px; margin-bottom:30px;">My Own Page — powered by Snapie</p>
         </div>
@@ -319,6 +335,11 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
     subscriptionStatus: user.subscription_status,
     siteUrl: `http://${user.username}.${SNAPIE_DOMAIN}`
   });
+});
+
+// Get available templates
+app.get('/admin/api/templates', requireAuth, (req, res) => {
+  res.json({ templates: TEMPLATES });
 });
 
 // ==================== AUTH MIDDLEWARE ====================
@@ -599,7 +620,7 @@ app.get('/admin/api/pages', requireAuth, async (req, res) => {
 app.post('/admin/api/pages', requireAuth, async (req, res) => {
   try {
     const username = req.session.username;
-    const { title } = req.body;
+    const { title, template } = req.body;
 
     if (!title) return res.status(400).json({ error: 'Title is required' });
 
@@ -610,7 +631,23 @@ app.post('/admin/api/pages', requireAuth, async (req, res) => {
       return res.status(400).json({ error: 'Page already exists' });
     }
 
-    const htmlContent = `<!DOCTYPE html>
+    let htmlContent;
+    const templateId = template || 'blank';
+
+    // Try loading a template file
+    if (templateId !== 'blank') {
+      const templateFile = path.join(TEMPLATES_DIR, templateId + '.html');
+      const resolved = path.resolve(templateFile);
+      if (resolved.startsWith(path.resolve(TEMPLATES_DIR)) && fsSync.existsSync(templateFile)) {
+        htmlContent = await fs.readFile(templateFile, 'utf8');
+        htmlContent = htmlContent.replace(/\{\{TITLE\}\}/g, title);
+        htmlContent = htmlContent.replace(/\{\{USERNAME\}\}/g, username);
+      }
+    }
+
+    // Fallback to blank page
+    if (!htmlContent) {
+      htmlContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -627,6 +664,7 @@ app.post('/admin/api/pages', requireAuth, async (req, res) => {
     </section>
 </body>
 </html>`;
+    }
 
     await fs.writeFile(filePath, htmlContent);
     res.json({ success: true, path: `/html/${filename}` });

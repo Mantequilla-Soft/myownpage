@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.photo-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 40px;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+}
+.photo-header .brand {
+    font-size: 22px;
+    font-weight: 300;
+    color: #111;
+    text-decoration: none;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+}
+.photo-header .links {
+    display: flex;
+    gap: 28px;
+}
+.photo-header .links a {
+    color: #888;
+    text-decoration: none;
+    font-size: 13px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+}
+.photo-header .links a:hover { color: #111; }
+.photo-hero {
+    height: 80vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: #f5f3f0;
+    padding: 40px 20px;
+}
+.photo-hero h1 {
+    font-size: 48px;
+    font-weight: 300;
+    color: #222;
+    letter-spacing: 2px;
+    margin-bottom: 16px;
+}
+.photo-hero p {
+    font-size: 16px;
+    color: #999;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+}
+.photo-gallery {
+    padding: 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+.photo-gallery h2 {
+    font-size: 14px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: #999;
+    text-align: center;
+    margin-bottom: 40px;
+    font-weight: 400;
+}
+.photo-masonry {
+    columns: 3;
+    column-gap: 16px;
+}
+.photo-masonry img {
+    width: 100%;
+    margin-bottom: 16px;
+    display: block;
+    transition: opacity 0.3s;
+    cursor: pointer;
+}
+.photo-masonry img:hover { opacity: 0.85; }
+@media (max-width: 900px) { .photo-masonry { columns: 2; } }
+@media (max-width: 500px) { .photo-masonry { columns: 1; } }
+.photo-about {
+    padding: 80px 40px;
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+.photo-about img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 24px;
+}
+.photo-about h2 {
+    font-size: 28px;
+    font-weight: 300;
+    margin-bottom: 16px;
+    color: #222;
+}
+.photo-about p {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #666;
+}
+.photo-footer {
+    text-align: center;
+    padding: 40px 20px;
+    border-top: 1px solid #eee;
+    color: #bbb;
+    font-size: 13px;
+    letter-spacing: 1px;
+}
+    </style>
+</head>
+<body>
+    <header class="photo-header">
+        <a href="/" class="brand">{{USERNAME}}</a>
+        <div class="links">
+            <a href="#gallery">Gallery</a>
+            <a href="#about">About</a>
+        </div>
+    </header>
+
+    <section class="photo-hero">
+        <div>
+            <h1>Visual Stories</h1>
+            <p>Photography by @{{USERNAME}}</p>
+        </div>
+    </section>
+
+    <section class="photo-gallery" id="gallery">
+        <h2>Selected Work</h2>
+        <div class="photo-masonry">
+            <img src="https://placehold.co/600x800/2c3e50/ecf0f1?text=Portrait" alt="Photo">
+            <img src="https://placehold.co/600x400/1a1a2e/8e44ad?text=Landscape" alt="Photo">
+            <img src="https://placehold.co/600x600/34495e/3498db?text=Urban" alt="Photo">
+            <img src="https://placehold.co/600x900/0a3d62/e74c3c?text=Street" alt="Photo">
+            <img src="https://placehold.co/600x450/1e3a2b/27ae60?text=Nature" alt="Photo">
+            <img src="https://placehold.co/600x700/2d1b69/f39c12?text=Abstract" alt="Photo">
+            <img src="https://placehold.co/600x500/3a1520/ecf0f1?text=Detail" alt="Photo">
+            <img src="https://placehold.co/600x750/1a2e1a/2ecc71?text=Portrait+II" alt="Photo">
+            <img src="https://placehold.co/600x400/2e1a2e/9b59b6?text=Night" alt="Photo">
+        </div>
+    </section>
+
+    <section class="photo-about" id="about">
+        <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="Photographer">
+        <h2>@{{USERNAME}}</h2>
+        <p>Capturing moments that tell stories. Based everywhere, always looking through the lens. All my work is shared on the Hive blockchain — permanent, uncensored, mine.</p>
+    </section>
+
+    <footer class="photo-footer">
+        <p>&copy; 2026 @{{USERNAME}} &middot; All rights reserved &middot; Built with My Own Page</p>
+    </footer>
+</body>
+</html>
