@@ -425,6 +425,7 @@
                     <div class="page-actions">
                         <a href="/admin/builder?page=${encodeURIComponent(page.path)}" class="btn btn-primary btn-small">✏️ Edit</a>
                         <a href="${page.viewUrl || page.path}" class="btn btn-secondary btn-small" target="_blank">👁️ View</a>
+                        ${page.isMain ? `<a href="/admin/onboarding" class="btn btn-secondary btn-small">🎨 Theme</a>` : ''}
                         ${!page.isMain ? `<button onclick="deletePage('${page.path}')" class="btn btn-danger btn-small">🗑️</button>` : ''}
                     </div>
                 </div>

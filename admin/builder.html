@@ -785,6 +785,9 @@
                 styles: ['/css/styles.css']
             },
             panels: { defaults: [] },
+            blockManager: {
+                custom: true,  // We handle rendering; GrapesJS provides dragStart/dragStop
+            },
             assetManager: {
                 upload: '/admin/api/upload',
                 uploadName: 'files',
@@ -792,6 +795,14 @@
                 autoAdd: true,
                 assets: []
             }
+        });
+
+        // Capture the drag helpers provided by GrapesJS block:custom event
+        var _blockDragStart = null;
+        var _blockDragStop = null;
+        editor.on('block:custom', function(props) {
+            _blockDragStart = props.dragStart;
+            _blockDragStop = props.dragStop;
         });
 
         // ==================== REGISTER HIVE COMPONENTS ====================
@@ -966,50 +977,96 @@
                 { label: 'Map', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>', content: '<iframe src="https://maps.google.com/maps?q=New+York&output=embed" style="width:100%; height:300px; border:0;"></iframe>' },
                 { label: 'Video', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>', content: '<div style="position:relative; padding-bottom:56.25%; height:0;"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe></div>' }
             ];
-            basics.forEach(function(b) {
+            basics.forEach(function(b, i) {
+                var blockId = 'basic-' + b.label.toLowerCase().replace(/\s+/g, '-');
+                editor.BlockManager.add(blockId, {
+                    label: b.label,
+                    content: b.content,
+                    category: 'Basic'
+                });
+
                 var el = document.createElement('div');
                 el.className = 'block-item';
                 el.innerHTML = (b.icon.length < 4 ? '<div style="font-size:24px; font-weight:bold; margin-bottom:4px; color:#bdc3c7;">' + b.icon + '</div>' : b.icon) + '<span>' + b.label + '</span>';
-                el.draggable = true;
-                el.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/html', b.content);
-                    e.dataTransfer.effectAllowed = 'copy';
-                });
-                el.addEventListener('click', function() {
-                    editor.addComponents(b.content);
-                    hasUnsavedChanges = true;
-                });
+
+                (function(bid, content) {
+                    var isDragging = false;
+                    el.addEventListener('mousedown', function(e) {
+                        isDragging = false;
+                        var blockObj = editor.BlockManager.get(bid);
+                        if (blockObj && _blockDragStart) {
+                            _blockDragStart(blockObj, e);
+                            isDragging = true;
+                        }
+                    });
+                    el.addEventListener('click', function() {
+                        if (!isDragging) insertAtSelection(content);
+                        isDragging = false;
+                    });
+                })(blockId, b.content);
+
                 basicGrid.appendChild(el);
             });
 
             // Hive blockchain blocks
             var hiveSvg = '<svg viewBox="0 0 24 24" width="32" height="32"><path d="M12 2L3 7v10l9 5 9-5V7l-9-5zm0 2.18L18.39 7.5 12 10.82 5.61 7.5 12 4.18zM5 9.06l6 3.33v6.55L5 15.61V9.06zm8 9.88v-6.55l6-3.33v6.55l-6 3.33z" fill="currentColor"/></svg>';
             var hiveBlocks = [
-                { label: 'Blog Feed', icon: hiveSvg, content: '<hive-blog account="gtg" posts-per-page="5" theme="auto"></hive-blog>' },
-                { label: 'Post', icon: hiveSvg, content: '<hive-post permlink="@gtg/hello-world" theme="auto"></hive-post>' },
-                { label: 'Comments', icon: hiveSvg, content: '<hive-comments permlink="@gtg/hello-world" theme="auto"></hive-comments>' },
-                { label: 'Witness', icon: hiveSvg, content: '<hive-witness account="gtg" theme="auto"></hive-witness>' },
-                { label: 'Tag Feed', icon: hiveSvg, content: '<hive-tag tag="photography" posts-per-page="4" theme="auto"></hive-tag>' },
-                { label: 'Post Header', icon: hiveSvg, content: '<hive-post-header permlink="@gtg/hello-world" theme="auto"></hive-post-header>' },
-                { label: 'Post Content', icon: hiveSvg, content: '<hive-post-content permlink="@gtg/hello-world" theme="auto"></hive-post-content>' },
-                { label: 'Post Footer', icon: hiveSvg, content: '<hive-post-footer permlink="@gtg/hello-world" theme="auto"></hive-post-footer>' }
+                { label: 'Blog Feed', icon: hiveSvg, content: '<hive-blog account="gtg" posts-per-page="5" theme="light"></hive-blog>' },
+                { label: 'Post', icon: hiveSvg, content: '<hive-post permlink="@gtg/hello-world" theme="light"></hive-post>' },
+                { label: 'Comments', icon: hiveSvg, content: '<hive-comments permlink="@gtg/hello-world" theme="light"></hive-comments>' },
+                { label: 'Witness', icon: hiveSvg, content: '<hive-witness account="gtg" theme="light"></hive-witness>' },
+                { label: 'Tag Feed', icon: hiveSvg, content: '<hive-tag tag="photography" posts-per-page="4" theme="light"></hive-tag>' },
+                { label: 'Post Header', icon: hiveSvg, content: '<hive-post-header permlink="@gtg/hello-world" theme="light"></hive-post-header>' },
+                { label: 'Post Content', icon: hiveSvg, content: '<hive-post-content permlink="@gtg/hello-world" theme="light"></hive-post-content>' },
+                { label: 'Post Footer', icon: hiveSvg, content: '<hive-post-footer permlink="@gtg/hello-world" theme="light"></hive-post-footer>' }
             ];
             var hiveGrid = document.getElementById('hiveBlocks');
-            hiveBlocks.forEach(function(b) {
+            hiveBlocks.forEach(function(b, i) {
+                var blockId = 'hive-' + b.label.toLowerCase().replace(/\s+/g, '-');
+                editor.BlockManager.add(blockId, {
+                    label: b.label,
+                    content: b.content,
+                    category: 'Hive'
+                });
+
                 var el = document.createElement('div');
                 el.className = 'block-item';
                 el.innerHTML = b.icon + '<span>' + b.label + '</span>';
-                el.draggable = true;
-                el.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/html', b.content);
-                    e.dataTransfer.effectAllowed = 'copy';
-                });
-                el.addEventListener('click', function() {
-                    editor.addComponents(b.content);
-                    hasUnsavedChanges = true;
-                });
+
+                (function(bid, content) {
+                    var isDragging = false;
+                    el.addEventListener('mousedown', function(e) {
+                        isDragging = false;
+                        var blockObj = editor.BlockManager.get(bid);
+                        if (blockObj && _blockDragStart) {
+                            _blockDragStart(blockObj, e);
+                            isDragging = true;
+                        }
+                    });
+                    el.addEventListener('click', function() {
+                        if (!isDragging) insertAtSelection(content);
+                        isDragging = false;
+                    });
+                })(blockId, b.content);
+
                 hiveGrid.appendChild(el);
             });
+        }
+
+        // Insert content after the selected component, or append to body
+        function insertAtSelection(content) {
+            var selected = editor.getSelected();
+            if (selected) {
+                var parent = selected.parent();
+                if (parent) {
+                    var index = parent.components().indexOf(selected);
+                    parent.components().add(content, { at: index + 1 });
+                    hasUnsavedChanges = true;
+                    return;
+                }
+            }
+            editor.addComponents(content);
+            hasUnsavedChanges = true;
         }
 
         function renderBlocks(containerId, blocks) {
@@ -1030,18 +1087,27 @@
                 var el = document.createElement('div');
                 el.className = 'block-item';
                 el.innerHTML = block.icon + '<span>' + block.label + '</span>';
-                el.draggable = true;
 
-                // Drag support
-                el.addEventListener('dragstart', function(e) {
-                    e.dataTransfer.setData('text/html', getContent());
-                    e.dataTransfer.effectAllowed = 'copy';
+                // Track drag state to distinguish drag from click
+                var isDragging = false;
+
+                el.addEventListener('mousedown', function(e) {
+                    isDragging = false;
+                    var blockObj = editor.BlockManager.get(block.id);
+                    if (blockObj && _blockDragStart) {
+                        // Update content for dynamic blocks (e.g. avatar)
+                        blockObj.set('content', getContent());
+                        _blockDragStart(blockObj, e);
+                        isDragging = true;
+                    }
                 });
 
-                // Click to append
-                el.addEventListener('click', function() {
-                    editor.addComponents(getContent());
-                    hasUnsavedChanges = true;
+                // Click to insert after selected element (if not a drag)
+                el.addEventListener('click', function(e) {
+                    if (!isDragging) {
+                        insertAtSelection(getContent());
+                    }
+                    isDragging = false;
                 });
 
                 container.appendChild(el);

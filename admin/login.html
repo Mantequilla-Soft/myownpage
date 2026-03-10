@@ -435,14 +435,15 @@
                             var verifyData = await verifyResp.json();
 
                             if (verifyResp.ok && verifyData.success) {
+                                var dest = verifyData.needsOnboarding ? '/admin/onboarding' : '/admin/dashboard';
                                 showStatus(
-                                    verifyData.isNew
-                                        ? 'Welcome, @' + username + '! Setting up your page...'
+                                    verifyData.needsOnboarding
+                                        ? 'Welcome, @' + username + '! Let\'s set up your page...'
                                         : 'Welcome back, @' + username + '!',
                                     'success'
                                 );
                                 setTimeout(function() {
-                                    window.location.href = '/admin/dashboard';
+                                    window.location.href = dest;
                                 }, 800);
                             } else {
                                 showStatus(verifyData.error || 'Verification failed.', 'error');

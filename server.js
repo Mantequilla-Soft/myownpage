@@ -145,29 +145,9 @@ async function ensureTenantDirs(username) {
       await fs.mkdir(dir, { recursive: true });
     }
   }
-  // Create default index.html if it doesn't exist
-  const indexFile = getTenantIndexFile(username);
-  if (!fsSync.existsSync(indexFile)) {
-    const defaultPage = `<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Home</title>
-    <link href="/css/styles.css" rel="stylesheet">
-</head>
-<body>
-    <section style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; background:linear-gradient(135deg, #1a1a2e, #16213e); padding:60px 20px;">
-        <div style="max-width:700px;">
-            <img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}" style="width:120px; height:120px; border-radius:50%; border:4px solid rgba(255,255,255,0.15); margin-bottom:24px; object-fit:cover;">
-            <h1 style="color:white; font-size:48px; margin-bottom:20px;">Welcome to @${username}'s site</h1>
-            <p style="color:#a8b4c4; font-size:20px; margin-bottom:30px;">My Own Page — powered by Snapie</p>
-        </div>
-    </section>
-</body>
-</html>`;
-    await fs.writeFile(indexFile, defaultPage);
-  }
+  // No default index.html — the onboarding flow handles homepage creation.
+  // If someone visits the subdomain before onboarding completes, the
+  // subdomain handler will show a "coming soon" placeholder.
 }
 
 // Calculate tenant storage usage
@@ -300,10 +280,12 @@ app.post('/admin/api/auth/verify', async (req, res) => {
     req.session.authenticated = true;
     req.session.username = clean;
 
+    const hasHomepage = fsSync.existsSync(getTenantIndexFile(clean));
     res.json({
       success: true,
       username: clean,
-      isNew: !existingUser
+      isNew: !existingUser,
+      needsOnboarding: !hasHomepage
     });
 
   } catch (error) {
@@ -340,6 +322,55 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
 // Get available templates
 app.get('/admin/api/templates', requireAuth, (req, res) => {
   res.json({ templates: TEMPLATES });
+});
+
+// Apply a template to the user's homepage (index.html)
+app.post('/admin/api/apply-homepage-template', requireAuth, async (req, res) => {
+  try {
+    const username = req.session.username;
+    const { template } = req.body;
+    const templateId = template || 'blank';
+
+    const indexFile = getTenantIndexFile(username);
+
+    let htmlContent;
+    if (templateId !== 'blank') {
+      const templateFile = path.join(TEMPLATES_DIR, templateId + '.html');
+      const resolved = path.resolve(templateFile);
+      if (resolved.startsWith(path.resolve(TEMPLATES_DIR)) && fsSync.existsSync(templateFile)) {
+        htmlContent = await fs.readFile(templateFile, 'utf8');
+        htmlContent = htmlContent.replace(/\{\{TITLE\}\}/g, 'Home');
+        htmlContent = htmlContent.replace(/\{\{USERNAME\}\}/g, username);
+      }
+    }
+
+    if (!htmlContent) {
+      htmlContent = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home</title>
+    <link href="/css/styles.css" rel="stylesheet">
+</head>
+<body>
+    <section style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; background:linear-gradient(135deg, #1a1a2e, #16213e); padding:60px 20px;">
+        <div style="max-width:700px;">
+            <img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}" style="width:120px; height:120px; border-radius:50%; border:4px solid rgba(255,255,255,0.15); margin-bottom:24px; object-fit:cover;">
+            <h1 style="color:white; font-size:48px; margin-bottom:20px;">Welcome to @${username}'s site</h1>
+            <p style="color:#a8b4c4; font-size:20px; margin-bottom:30px;">My Own Page — powered by Snapie</p>
+        </div>
+    </section>
+</body>
+</html>`;
+    }
+
+    await fs.writeFile(indexFile, htmlContent);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error applying homepage template:', error);
+    res.status(500).json({ error: 'Error applying template' });
+  }
 });
 
 // ==================== AUTH MIDDLEWARE ====================
@@ -415,6 +446,31 @@ app.get('*', (req, res, next) => {
       res.set('Cache-Control', 'no-store');
       return res.sendFile(indexFile);
     }
+    // No homepage yet — show a coming soon page
+    return res.send(`<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>@${username} — Coming Soon</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0e17;color:#f0f0f0;text-align:center;padding:40px 20px}
+.wrap{max-width:460px}
+img{width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);margin-bottom:24px;object-fit:cover}
+h1{font-size:32px;margin-bottom:12px;font-weight:700}
+p{color:#5a6a7a;font-size:16px;line-height:1.6}
+.badge{display:inline-block;margin-top:28px;padding:8px 20px;border:1px solid rgba(255,255,255,0.08);border-radius:20px;font-size:12px;color:#4a5a6a;letter-spacing:0.5px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}">
+<h1>@${username}</h1>
+<p>This site is being set up. Check back soon.</p>
+<span class="badge">Powered by My Own Page</span>
+</div>
+</body>
+</html>`);
   }
 
   // /pages/{name} → tenants/{username}/html/{name}.html
@@ -450,12 +506,17 @@ app.get('*', (req, res, next) => {
 
 app.get('/site/:username', (req, res) => {
   const username = req.params.username.toLowerCase();
+  const tenantDir = getTenantDir(username);
+  if (!fsSync.existsSync(tenantDir)) {
+    return res.status(404).send('Site not found');
+  }
   const indexFile = getTenantIndexFile(username);
   if (fsSync.existsSync(indexFile)) {
     res.set('Cache-Control', 'no-store');
     return res.sendFile(indexFile);
   }
-  res.status(404).send('Site not found');
+  // Tenant exists but no homepage yet
+  res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>@${username}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0e17;color:#f0f0f0;text-align:center;padding:40px}img{width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);margin-bottom:24px;object-fit:cover}h1{font-size:32px;margin-bottom:12px}p{color:#5a6a7a;font-size:16px}</style></head><body><div><img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}"><h1>@${username}</h1><p>This site is being set up. Check back soon.</p></div></body></html>`);
 });
 
 app.get('/site/:username/pages/:page', (req, res) => {
@@ -472,6 +533,28 @@ app.use('/site/:username/uploads', (req, res) => {
   const username = req.params.username.toLowerCase();
   const uploadsDir = getTenantUploadsDir(username);
   express.static(uploadsDir)(req, res, () => res.status(404).send('Not found'));
+});
+
+// ==================== PAGES ROUTE (for logged-in users viewing their own pages) ====================
+
+app.get('/pages/:page', (req, res) => {
+  // If on a tenant subdomain, the subdomain handler above already handled it
+  // This route is for the main domain (local dev / dashboard "View" links)
+  const username = req.session && req.session.username;
+  if (!username) return res.status(404).send('Page not found');
+
+  const pageName = req.params.page.replace(/[^a-zA-Z0-9_-]/g, '');
+  const filePath = path.join(getTenantHtmlDir(username), pageName + '.html');
+  const resolved = path.resolve(filePath);
+  if (!resolved.startsWith(path.resolve(getTenantHtmlDir(username)))) {
+    return res.status(400).send('Invalid path');
+  }
+
+  if (fsSync.existsSync(filePath)) {
+    res.set('Cache-Control', 'no-store');
+    return res.sendFile(resolved);
+  }
+  res.status(404).send('Page not found');
 });
 
 // ==================== PUBLIC ROUTES ====================
@@ -543,6 +626,10 @@ app.get('/admin/login', (req, res) => {
   res.sendFile(path.join(__dirname, 'admin', 'login.html'));
 });
 
+app.get('/admin/onboarding', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'onboarding.html'));
+});
+
 app.get('/admin/dashboard', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'admin', 'dashboard.html'));
 });
@@ -567,13 +654,18 @@ app.get('/admin/api/pages', requireAuth, async (req, res) => {
     const username = req.session.username;
     const pages = [];
 
-    // Add main page (index.html)
-    pages.push({
-      title: 'Home',
-      path: '/index.html',
-      viewUrl: '/',
-      isMain: true
-    });
+    const siteBase = `/site/${username}`;
+
+    // Add main page (index.html) only if it exists
+    const indexFile = getTenantIndexFile(username);
+    if (fsSync.existsSync(indexFile)) {
+      pages.push({
+        title: 'Home',
+        path: '/index.html',
+        viewUrl: siteBase,
+        isMain: true
+      });
+    }
 
     // Add pages from tenant html directory
     const htmlDir = getTenantHtmlDir(username);
@@ -589,9 +681,9 @@ app.get('/admin/api/pages', requireAuth, async (req, res) => {
             const content = await fs.readFile(fullPath, 'utf8');
             const titleMatch = content.match(/<title>(.*?)<\/title>/i);
             const title = titleMatch ? titleMatch[1].split('-')[0].trim() : file;
-            pages.push({ title, path: filePath, viewUrl: `/pages/${file.replace('.html', '')}`, modified: stats.mtime, isMain: false });
+            pages.push({ title, path: filePath, viewUrl: `${siteBase}/pages/${file.replace('.html', '')}`, modified: stats.mtime, isMain: false });
           } catch (err) {
-            pages.push({ title: file, path: filePath, viewUrl: filePath, modified: stats.mtime, isMain: false });
+            pages.push({ title: file, path: filePath, viewUrl: `${siteBase}/pages/${file.replace('.html', '')}`, modified: stats.mtime, isMain: false });
           }
         }
       }
@@ -795,35 +887,6 @@ app.post('/admin/api/page-content', requireAuth, async (req, res) => {
     cleanHead = cleanHead.replace(/<!-- hive-components-start -->[\s\S]*?<!-- hive-components-end -->\n?/g, '');
     if (usesHive) {
       const hiveScripts = `<!-- hive-components-start -->
-<style>
-hive-post, hive-post-header, hive-post-content, hive-post-footer,
-hive-comments, hive-witness, hive-tag, hive-blog, hive-account {
-  --hive-on-surface: #1a1a1a;
-  --hive-on-surface-variant: #4a4a4a;
-  --hive-surface-variant: #f5f5f5;
-  --hive-border: #d0d0d0;
-}
-hive-post[theme="dark"], hive-post-header[theme="dark"], hive-post-content[theme="dark"],
-hive-post-footer[theme="dark"], hive-comments[theme="dark"], hive-witness[theme="dark"],
-hive-tag[theme="dark"], hive-blog[theme="dark"], hive-account[theme="dark"] {
-  --hive-on-surface: #f0f0f0;
-  --hive-on-surface-variant: #c0c0c0;
-  --hive-surface: #1a1a1a;
-  --hive-surface-variant: #2a2a2a;
-  --hive-border: #404040;
-}
-@media (prefers-color-scheme: dark) {
-  hive-post[theme="auto"], hive-post-header[theme="auto"], hive-post-content[theme="auto"],
-  hive-post-footer[theme="auto"], hive-comments[theme="auto"], hive-witness[theme="auto"],
-  hive-tag[theme="auto"], hive-blog[theme="auto"], hive-account[theme="auto"] {
-    --hive-on-surface: #f0f0f0;
-    --hive-on-surface-variant: #c0c0c0;
-    --hive-surface: #1a1a1a;
-    --hive-surface-variant: #2a2a2a;
-    --hive-border: #404040;
-  }
-}
-</style>
 <script type="importmap">{"imports":{"lit":"https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js","@hiveio/internal":"https://gtg.openhive.network/5bb236/hive-internal.js"}}</script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-post.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-witness.js"></script>
