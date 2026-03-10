@@ -52,16 +52,26 @@
         .editor-wrap {
             display: flex;
             height: calc(100vh - 50px);
+            overflow: hidden;
+            position: relative;
         }
 
         /* LEFT SIDEBAR - Blocks */
         .left-sidebar {
-            width: 260px;
-            min-width: 260px;
+            width: 230px;
+            flex-shrink: 0;
             background: #2c3e50;
             color: #ecf0f1;
             overflow-y: auto;
             border-right: 1px solid #1a252f;
+            transition: width 0.25s ease, opacity 0.25s ease;
+        }
+        .left-sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+            border-right: none;
+            opacity: 0;
+            pointer-events: none;
         }
         .left-sidebar h3 {
             padding: 14px 16px 8px;
@@ -76,7 +86,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            padding: 8px 12px 16px;
+            padding: 8px 12px 14px;
         }
         .block-item {
             background: #34495e;
@@ -106,12 +116,58 @@
 
         /* RIGHT SIDEBAR - Style manager & layers */
         .right-sidebar {
-            width: 280px;
-            min-width: 280px;
+            width: 270px;
+            flex-shrink: 0;
             background: #2c3e50;
             color: #ecf0f1;
             overflow-y: auto;
+            overflow-x: hidden;
             border-left: 1px solid #1a252f;
+            transition: width 0.25s ease, opacity 0.25s ease;
+        }
+        .right-sidebar.collapsed {
+            width: 0;
+            overflow: hidden;
+            border-left: none;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        /* Sidebar toggle buttons */
+        .sidebar-toggle {
+            position: absolute;
+            top: 8px;
+            z-index: 10;
+            width: 28px;
+            height: 28px;
+            background: #34495e;
+            border: 1px solid #4a6278;
+            border-radius: 6px;
+            color: #bdc3c7;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .sidebar-toggle:hover {
+            background: #4a6278;
+            color: #ecf0f1;
+        }
+        .toggle-left {
+            left: 234px;
+        }
+        .left-sidebar.collapsed ~ .toggle-left,
+        .toggle-left.shifted {
+            left: 4px;
+        }
+        .toggle-right {
+            right: 274px;
+        }
+        .right-sidebar.collapsed ~ .toggle-right,
+        .toggle-right.shifted {
+            right: 4px;
         }
         .right-tabs {
             display: flex;
@@ -139,7 +195,7 @@
         }
         .right-panel {
             display: none;
-            padding: 16px;
+            padding: 14px;
         }
         .right-panel.active { display: block; }
 
@@ -172,13 +228,14 @@
             margin-bottom: 8px;
         }
         .style-row label {
-            width: 90px;
+            width: 80px;
             font-size: 12px;
             color: #95a5a6;
             flex-shrink: 0;
         }
         .style-row input, .style-row select {
             flex: 1;
+            min-width: 0;
             padding: 6px 8px;
             background: #34495e;
             border: 1px solid #4a6278;
@@ -202,6 +259,7 @@
         /* Canvas */
         #gjs {
             flex: 1;
+            min-width: 0;
             overflow: hidden;
         }
         .gjs-cv-canvas { background: #e8e8e8; }
@@ -485,7 +543,11 @@
         </div>
     </div>
 
-    <div class="editor-wrap">
+    <div class="editor-wrap" id="editorWrap">
+        <!-- Sidebar toggle buttons -->
+        <button class="sidebar-toggle toggle-left" id="toggleLeft" onclick="toggleSidebar('left')" title="Toggle blocks panel">&#x25C0;</button>
+        <button class="sidebar-toggle toggle-right" id="toggleRight" onclick="toggleSidebar('right')" title="Toggle properties panel">&#x25B6;</button>
+
         <!-- LEFT SIDEBAR: Blocks to drag onto the page -->
         <div class="left-sidebar" id="leftSidebar">
             <h3>Sections</h3>
@@ -796,6 +858,28 @@
                 assets: []
             }
         });
+
+        // ==================== SIDEBAR TOGGLES ====================
+
+        function toggleSidebar(side) {
+            if (side === 'left') {
+                var sb = document.getElementById('leftSidebar');
+                var btn = document.getElementById('toggleLeft');
+                sb.classList.toggle('collapsed');
+                var isCollapsed = sb.classList.contains('collapsed');
+                btn.classList.toggle('shifted', isCollapsed);
+                btn.innerHTML = isCollapsed ? '&#x25B6;' : '&#x25C0;';
+            } else {
+                var sb = document.querySelector('.right-sidebar');
+                var btn = document.getElementById('toggleRight');
+                sb.classList.toggle('collapsed');
+                var isCollapsed = sb.classList.contains('collapsed');
+                btn.classList.toggle('shifted', isCollapsed);
+                btn.innerHTML = isCollapsed ? '&#x25C0;' : '&#x25B6;';
+            }
+            // Tell GrapesJS to recalculate canvas size
+            setTimeout(function() { editor.refresh(); }, 300);
+        }
 
         // Capture the drag helpers provided by GrapesJS block:custom event
         var _blockDragStart = null;
@@ -1357,6 +1441,12 @@
 
         // Update style panel when a component is selected
         editor.on('component:selected', function(component) {
+            // Auto-open right sidebar if collapsed
+            var rs = document.querySelector('.right-sidebar');
+            if (rs.classList.contains('collapsed')) {
+                toggleSidebar('right');
+            }
+
             document.getElementById('noSelection').style.display = 'none';
             document.getElementById('styleEditor').style.display = 'block';
 
