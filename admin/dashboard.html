@@ -227,9 +227,12 @@
 </head>
 <body>
     <div class="header">
-        <h1>🎨 Admin Dashboard</h1>
+        <div>
+            <h1>Snapie</h1>
+            <span id="headerUsername" style="color:#999; font-size:14px;"></span>
+        </div>
         <div class="header-actions">
-            <a href="/" class="btn btn-secondary" target="_blank">View Site</a>
+            <a href="#" id="viewSiteLink" class="btn btn-secondary" target="_blank">View Site</a>
             <button onclick="logout()" class="btn btn-secondary">Logout</button>
         </div>
     </div>
@@ -245,8 +248,12 @@
                 <div class="number" id="totalImages">0</div>
             </div>
             <div class="stat-card">
-                <h3>Last Modified</h3>
-                <div class="number" style="font-size: 16px; margin-top: 14px;" id="lastModified">-</div>
+                <h3>Storage</h3>
+                <div class="number" style="font-size: 16px; margin-top: 14px;" id="storageUsed">-</div>
+            </div>
+            <div class="stat-card">
+                <h3>Your Site URL</h3>
+                <div class="number" style="font-size: 14px; margin-top: 14px; word-break: break-all;" id="siteUrl">-</div>
             </div>
         </div>
         
@@ -286,9 +293,28 @@
     </div>
     
     <script>
-        // Load pages on page load
-        window.addEventListener('DOMContentLoaded', loadPages);
+        // Load user info and pages on page load
+        window.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+            loadPages();
+        });
         
+        async function loadUserInfo() {
+            try {
+                const resp = await fetch('/admin/api/me');
+                if (!resp.ok) return;
+                const user = await resp.json();
+                document.getElementById('headerUsername').textContent = '@' + user.username;
+                document.getElementById('siteUrl').textContent = user.siteUrl;
+                document.getElementById('viewSiteLink').href = '/site/' + user.username;
+                const usedMB = (user.storageUsed / 1024 / 1024).toFixed(1);
+                const limitMB = (user.storageLimit / 1024 / 1024).toFixed(0);
+                document.getElementById('storageUsed').textContent = usedMB + ' / ' + limitMB + ' MB';
+            } catch (e) {
+                console.error('Error loading user info:', e);
+            }
+        }
+
         async function loadPages() {
             try {
                 const response = await fetch('/admin/api/pages');
@@ -331,7 +357,6 @@
         function updateStats(data) {
             document.getElementById('totalPages').textContent = data.pages.length;
             document.getElementById('totalImages').textContent = data.imageCount || 0;
-            document.getElementById('lastModified').textContent = data.lastModified ? new Date(data.lastModified).toLocaleDateString() : '-';
         }
         
         function showNewPageModal() {

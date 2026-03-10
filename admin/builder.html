@@ -242,6 +242,233 @@
             top: 0 !important;
             left: 0 !important;
         }
+
+        /* Inline edit hint in sidebar */
+        .inline-edit-hint {
+            background: linear-gradient(135deg, #1a3a4a, #1a2a3e);
+            border: 1px solid #2980b9;
+            border-radius: 8px;
+            padding: 14px 16px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        .inline-edit-hint svg {
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+        .inline-edit-hint-text {
+            font-size: 12px;
+            color: #a8d4f0;
+            line-height: 1.5;
+        }
+        .inline-edit-hint-text strong {
+            color: #5dade2;
+            display: block;
+            margin-bottom: 3px;
+            font-size: 12px;
+        }
+
+        /* Page link picker */
+        .page-picker-wrap {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .page-picker-wrap input[type="text"] {
+            width: 100%;
+        }
+        .page-picker-dropdown {
+            background: #1a2636;
+            border: 1px solid #3498db;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+        }
+        .page-picker-dropdown .page-pick-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background 0.1s;
+            border-bottom: 1px solid #223344;
+        }
+        .page-picker-dropdown .page-pick-item:last-child {
+            border-bottom: none;
+        }
+        .page-picker-dropdown .page-pick-item:hover {
+            background: #2980b9;
+        }
+        .page-pick-item .page-pick-title {
+            color: #ecf0f1;
+            font-weight: 600;
+        }
+        .page-pick-item .page-pick-url {
+            color: #7f8c8d;
+            font-size: 11px;
+            font-family: monospace;
+        }
+        .page-pick-item .page-pick-icon {
+            color: #3498db;
+            flex-shrink: 0;
+        }
+        .page-pick-label {
+            font-size: 11px;
+            color: #7f8c8d;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .page-pick-or {
+            font-size: 11px;
+            color: #5a6a7a;
+            text-align: center;
+            padding: 2px 0;
+        }
+
+        /* Page link picker modal (for RTE toolbar) */
+        .link-picker-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 200000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .link-picker-box {
+            background: #1e2a3a;
+            border: 1px solid #34495e;
+            border-radius: 12px;
+            width: 400px;
+            max-width: 90vw;
+            max-height: 70vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 16px 48px rgba(0,0,0,0.5);
+        }
+        .link-picker-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #34495e;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .link-picker-header h3 {
+            color: #ecf0f1;
+            font-size: 16px;
+            margin: 0;
+        }
+        .link-picker-header button {
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            font-size: 22px;
+            cursor: pointer;
+        }
+        .link-picker-body {
+            padding: 16px 20px;
+            overflow-y: auto;
+            flex: 1;
+        }
+        .link-picker-pages {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            margin-bottom: 16px;
+        }
+        .link-picker-pages .page-pick-item {
+            padding: 10px 14px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.1s;
+            border-radius: 6px;
+            background: #243344;
+        }
+        .link-picker-pages .page-pick-item:hover {
+            background: #2980b9;
+        }
+        .link-picker-custom {
+            border-top: 1px solid #34495e;
+            padding-top: 14px;
+        }
+        .link-picker-custom label {
+            font-size: 12px;
+            color: #95a5a6;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .link-picker-custom input {
+            width: 100%;
+            padding: 8px 12px;
+            background: #34495e;
+            border: 1px solid #4a6278;
+            border-radius: 6px;
+            color: #ecf0f1;
+            font-size: 13px;
+        }
+        .link-picker-custom .btn {
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        /* Floating rich text toolbar */
+        .rte-floating-toolbar {
+            position: fixed;
+            z-index: 100001;
+            background: #1a1a2e;
+            border: 1px solid #3a3a5e;
+            border-radius: 10px;
+            padding: 4px 6px;
+            display: flex;
+            gap: 2px;
+            align-items: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+            pointer-events: auto;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+        .rte-floating-toolbar.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .rte-floating-toolbar button {
+            background: none;
+            border: none;
+            color: #8a8aaf;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .rte-floating-toolbar button:hover {
+            background: #2a2a4e;
+            color: #e0e0ff;
+        }
+        .rte-floating-toolbar button.active {
+            background: #3498db;
+            color: white;
+        }
+        .rte-floating-toolbar .rte-sep {
+            width: 1px;
+            height: 20px;
+            background: #3a3a5e;
+            margin: 0 3px;
+        }
     </style>
 </head>
 <body>
@@ -804,31 +1031,220 @@
 
         buildBlocksUI();
 
-        // ==================== DOUBLE-CLICK TO EDIT TEXT ====================
+        // ==================== INLINE TEXT EDITING ====================
 
-        // Make all text-containing elements editable on double-click
+        var editableTextTags = ['a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'button', 'li', 'blockquote', 'figcaption', 'td', 'th', 'label', 'div'];
+
+        // Make all text-containing elements editable
         editor.on('component:add', function(component) {
             enableInlineEditing(component);
         });
 
-        // Also enable for components loaded from saved page
         editor.on('load', function() {
             editor.getWrapper().onAll(function(comp) {
                 enableInlineEditing(comp);
             });
+            injectCanvasEditStyles();
         });
 
         function enableInlineEditing(component) {
             var tag = (component.get('tagName') || '').toLowerCase();
-            var editableTags = ['a', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'p', 'span', 'button', 'li', 'blockquote', 'figcaption', 'td', 'th', 'label'];
-            if (editableTags.indexOf(tag) !== -1) {
+            if (editableTextTags.indexOf(tag) !== -1) {
                 component.set('editable', true);
             }
-            // Recurse into children
             component.components().forEach(function(child) {
                 enableInlineEditing(child);
             });
         }
+
+        // Inject hover/editing styles into the canvas iframe
+        function injectCanvasEditStyles() {
+            var frame = editor.Canvas.getFrameEl();
+            if (!frame || !frame.contentDocument) return;
+            var doc = frame.contentDocument;
+            if (doc.getElementById('ankapolo-edit-styles')) return;
+            var style = doc.createElement('style');
+            style.id = 'ankapolo-edit-styles';
+            style.textContent = [
+                /* Editable text elements get a subtle hover cue */
+                '[contenteditable="false"]:is(h1,h2,h3,h4,h5,h6,p,span,a,button,li,blockquote,figcaption,label) {',
+                '  cursor: text !important;',
+                '  transition: outline 0.15s ease, box-shadow 0.15s ease;',
+                '}',
+                '[contenteditable="false"]:is(h1,h2,h3,h4,h5,h6,p,span,a,button,li,blockquote,figcaption,label):hover {',
+                '  outline: 2px dashed rgba(52, 152, 219, 0.4) !important;',
+                '  outline-offset: 3px !important;',
+                '  box-shadow: inset 0 0 0 1000px rgba(52, 152, 219, 0.03) !important;',
+                '}',
+                /* Active editing state */
+                '[contenteditable="true"] {',
+                '  outline: 2px solid #3498db !important;',
+                '  outline-offset: 3px !important;',
+                '  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.15), inset 0 0 0 1000px rgba(52, 152, 219, 0.02) !important;',
+                '  border-radius: 2px;',
+                '  min-height: 1em;',
+                '}'
+            ].join('\n');
+            doc.head.appendChild(style);
+        }
+
+        // Single-click on text elements enters inline edit mode
+        editor.on('component:selected', function(component) {
+            var tag = (component.get('tagName') || '').toLowerCase();
+            if (editableTextTags.indexOf(tag) !== -1 && component.get('editable')) {
+                // Check if it has text content (not just child components)
+                var hasTextContent = false;
+                if (component.components().length === 0) {
+                    hasTextContent = true;
+                } else {
+                    // Check for text nodes among children
+                    var viewEl = component.view && component.view.el;
+                    if (viewEl) {
+                        for (var i = 0; i < viewEl.childNodes.length; i++) {
+                            if (viewEl.childNodes[i].nodeType === 3 && viewEl.childNodes[i].textContent.trim()) {
+                                hasTextContent = true;
+                                break;
+                            }
+                        }
+                    }
+                    // Also treat simple single-text-child elements
+                    if (component.components().length === 0) hasTextContent = true;
+                }
+
+                if (hasTextContent && tag !== 'div') {
+                    // Short delay to let GrapesJS finish its selection, then enter edit mode
+                    setTimeout(function() {
+                        if (component.view && component.view.el) {
+                            component.view.el.click();
+                            // Trigger GrapesJS RTE on the component
+                            var rte = editor.RichTextEditor;
+                            if (rte && component.view.enableEditing) {
+                                component.view.enableEditing();
+                                showFloatingToolbar(component);
+                            }
+                        }
+                    }, 80);
+                }
+            }
+        });
+
+        // ==================== FLOATING RICH TEXT TOOLBAR ====================
+
+        var floatingToolbar = null;
+
+        function createFloatingToolbar() {
+            if (floatingToolbar) return floatingToolbar;
+
+            floatingToolbar = document.createElement('div');
+            floatingToolbar.className = 'rte-floating-toolbar';
+            floatingToolbar.innerHTML = [
+                '<button data-cmd="bold" title="Bold (Ctrl+B)"><b>B</b></button>',
+                '<button data-cmd="italic" title="Italic (Ctrl+I)"><i>I</i></button>',
+                '<button data-cmd="underline" title="Underline (Ctrl+U)"><u>U</u></button>',
+                '<div class="rte-sep"></div>',
+                '<button data-cmd="strikeThrough" title="Strikethrough"><s>S</s></button>',
+                '<button data-cmd="createLink" title="Add link"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></button>',
+                '<div class="rte-sep"></div>',
+                '<button data-cmd="removeFormat" title="Clear formatting"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>'
+            ].join('');
+
+            document.body.appendChild(floatingToolbar);
+
+            // Wire up buttons
+            floatingToolbar.querySelectorAll('button[data-cmd]').forEach(function(btn) {
+                btn.addEventListener('mousedown', function(e) {
+                    e.preventDefault(); // Don't steal focus from the editable element
+                    var cmd = btn.getAttribute('data-cmd');
+                    var frame = editor.Canvas.getFrameEl();
+                    if (!frame || !frame.contentDocument) return;
+                    var doc = frame.contentDocument;
+
+                    if (cmd === 'createLink') {
+                        // Save selection before opening modal
+                        var sel = doc.getSelection();
+                        var range = sel && sel.rangeCount > 0 ? sel.getRangeAt(0) : null;
+                        openLinkPickerModal(function(url) {
+                            // Restore selection
+                            if (range) {
+                                sel.removeAllRanges();
+                                sel.addRange(range);
+                            }
+                            doc.execCommand('createLink', false, url);
+                            hasUnsavedChanges = true;
+                        });
+                        return;
+                    } else {
+                        doc.execCommand(cmd, false, null);
+                    }
+                    updateToolbarState(doc);
+                    hasUnsavedChanges = true;
+                });
+            });
+
+            return floatingToolbar;
+        }
+
+        function showFloatingToolbar(component) {
+            var toolbar = createFloatingToolbar();
+            toolbar.classList.remove('visible');
+
+            function positionToolbar() {
+                if (!component.view || !component.view.el) return;
+                var frame = editor.Canvas.getFrameEl();
+                if (!frame) return;
+
+                var elRect = component.view.el.getBoundingClientRect();
+                var frameRect = frame.getBoundingClientRect();
+
+                var top = frameRect.top + elRect.top - 48;
+                var left = frameRect.left + elRect.left + (elRect.width / 2) - 120;
+
+                // Keep on screen
+                if (top < 5) top = frameRect.top + elRect.bottom + 8;
+                if (left < 5) left = 5;
+                if (left + 240 > window.innerWidth) left = window.innerWidth - 250;
+
+                toolbar.style.top = top + 'px';
+                toolbar.style.left = left + 'px';
+            }
+
+            positionToolbar();
+            requestAnimationFrame(function() {
+                toolbar.classList.add('visible');
+            });
+
+            // Update active state of formatting buttons
+            var frame = editor.Canvas.getFrameEl();
+            if (frame && frame.contentDocument) {
+                updateToolbarState(frame.contentDocument);
+            }
+        }
+
+        function hideFloatingToolbar() {
+            if (floatingToolbar) {
+                floatingToolbar.classList.remove('visible');
+            }
+        }
+
+        function updateToolbarState(doc) {
+            if (!floatingToolbar) return;
+            var commands = ['bold', 'italic', 'underline', 'strikeThrough'];
+            commands.forEach(function(cmd) {
+                var btn = floatingToolbar.querySelector('[data-cmd="' + cmd + '"]');
+                if (btn) {
+                    btn.classList.toggle('active', doc.queryCommandState(cmd));
+                }
+            });
+        }
+
+        // Hide toolbar when editing ends
+        editor.on('rte:disable', function() {
+            hideFloatingToolbar();
+        });
+
+        editor.on('component:deselected', function() {
+            hideFloatingToolbar();
+        });
 
         // ==================== RIGHT SIDEBAR - TABS ====================
 
@@ -924,7 +1340,7 @@
 
             // Links and buttons
             if (tag === 'a') {
-                props.push({ name: 'href', label: 'Link URL', value: attrs.href || '#', placeholder: 'https://...' });
+                props.push({ name: 'href', label: 'Link to', value: attrs.href || '#', placeholder: 'https://...', type: 'link-picker' });
                 props.push({ name: 'target', label: 'Open in', type: 'select', value: attrs.target || '', options: [
                     { value: '', label: 'Same window' },
                     { value: '_blank', label: 'New tab' }
@@ -1049,37 +1465,98 @@
                 row.appendChild(label);
 
                 if (prop.type === 'text-content') {
+                    // Instead of a tiny text input, show a hint to edit directly on canvas
+                    var hint = document.createElement('div');
+                    hint.className = 'inline-edit-hint';
+                    hint.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#5dade2" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>' +
+                        '<div class="inline-edit-hint-text"><strong>Click the text on canvas</strong>Edit directly — just like a word processor. Use the toolbar for bold, italic, links.</div>';
+                    // Replace the row with just the hint (no label + input pattern)
+                    row.innerHTML = '';
+                    row.className = '';
+                    row.appendChild(hint);
+
+                    // Add a "focus" button to scroll to and enter edit mode
+                    var focusBtn = document.createElement('button');
+                    focusBtn.className = 'btn btn-secondary';
+                    focusBtn.style.cssText = 'font-size:11px; padding:5px 12px; width:100%; margin-top:-6px; margin-bottom:12px;';
+                    focusBtn.textContent = 'Click to edit this text';
+                    focusBtn.addEventListener('click', function() {
+                        if (component.view && component.view.enableEditing) {
+                            component.view.enableEditing();
+                            showFloatingToolbar(component);
+                        }
+                    });
+                    // We'll add the button after the hint row
+                    row._focusBtn = focusBtn;
+                } else if (prop.type === 'link-picker') {
+                    var wrap = document.createElement('div');
+                    wrap.className = 'page-picker-wrap';
+
+                    // Page picker dropdown (loads from API)
+                    var pickerLabel = document.createElement('div');
+                    pickerLabel.className = 'page-pick-label';
+                    pickerLabel.textContent = 'Your pages';
+                    wrap.appendChild(pickerLabel);
+
+                    var dropdown = document.createElement('div');
+                    dropdown.className = 'page-picker-dropdown';
+                    dropdown.innerHTML = '<div style="padding:10px; color:#7f8c8d; font-size:12px;">Loading pages...</div>';
+                    wrap.appendChild(dropdown);
+
+                    // Fetch pages and populate
+                    (function(dd, inputRef, comp, propName) {
+                        fetchSitePages(function(pages) {
+                            dd.innerHTML = '';
+                            pages.forEach(function(page) {
+                                var item = document.createElement('div');
+                                item.className = 'page-pick-item';
+                                var icon = page.isMain ?
+                                    '<svg class="page-pick-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' :
+                                    '<svg class="page-pick-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+                                item.innerHTML = icon +
+                                    '<div><span class="page-pick-title">' + escapeHtml(page.title) + '</span><br><span class="page-pick-url">' + escapeHtml(page.viewUrl) + '</span></div>';
+
+                                // Highlight if currently selected
+                                if (prop.value === page.viewUrl) {
+                                    item.style.background = '#2980b9';
+                                }
+
+                                item.addEventListener('click', function() {
+                                    applyAttribute(comp, propName, page.viewUrl);
+                                    if (inputRef) inputRef.value = page.viewUrl;
+                                    // Update highlight
+                                    dd.querySelectorAll('.page-pick-item').forEach(function(i) { i.style.background = ''; });
+                                    item.style.background = '#2980b9';
+                                    hasUnsavedChanges = true;
+                                });
+                                dd.appendChild(item);
+                            });
+
+                            // Add section anchors hint
+                            var anchorHint = document.createElement('div');
+                            anchorHint.style.cssText = 'padding:8px 12px; font-size:11px; color:#5a6a7a; border-top:1px solid #223344;';
+                            anchorHint.textContent = 'Tip: Add #section-id to link to a specific section';
+                            dd.appendChild(anchorHint);
+                        });
+                    })(dropdown, null, component, prop.name);
+
+                    var orLabel = document.createElement('div');
+                    orLabel.className = 'page-pick-or';
+                    orLabel.textContent = '— or enter a custom URL —';
+                    wrap.appendChild(orLabel);
+
+                    // Manual URL input as fallback
                     var input = document.createElement('input');
                     input.type = 'text';
                     input.value = prop.value;
-                    input.placeholder = prop.placeholder || '';
+                    input.placeholder = prop.placeholder || 'https://...';
                     input.addEventListener('change', function() {
-                        // Update the text content of the component
-                        var children = component.components();
-                        if (children.length === 0) {
-                            // Simple text node — set content directly
-                            component.components(this.value);
-                        } else {
-                            // Has child components — set the text of the first text node
-                            component.content = this.value;
-                            // Also try updating via view for immediate visual feedback
-                            if (component.view && component.view.el) {
-                                // Find text nodes and update
-                                var el = component.view.el;
-                                var walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT, null, false);
-                                var textNode = walker.nextNode();
-                                if (textNode) textNode.nodeValue = this.value;
-                            }
-                        }
-                        hasUnsavedChanges = true;
+                        applyAttribute(component, prop.name, this.value);
+                        // Clear dropdown highlights
+                        dropdown.querySelectorAll('.page-pick-item').forEach(function(i) { i.style.background = ''; });
                     });
-                    var hint = document.createElement('div');
-                    hint.style.cssText = 'font-size:10px; color:#7f8c8d; margin-top:4px; flex-basis:100%;';
-                    hint.textContent = 'Tip: Double-click text in the canvas to edit it directly';
-                    var wrap = document.createElement('div');
-                    wrap.style.cssText = 'flex:1; display:flex; flex-direction:column; gap:4px;';
                     wrap.appendChild(input);
-                    wrap.appendChild(hint);
+
                     row.appendChild(wrap);
                 } else if (prop.type === 'select') {
                     var select = document.createElement('select');
@@ -1139,6 +1616,7 @@
                 }
 
                 propsBody.appendChild(row);
+                if (row._focusBtn) propsBody.appendChild(row._focusBtn);
             });
         }
 
@@ -1200,6 +1678,118 @@
                 var hex = parseInt(x).toString(16);
                 return hex.length === 1 ? '0' + hex : hex;
             }).join('');
+        }
+
+        // ==================== PAGE LINK HELPERS ====================
+
+        var cachedSitePages = null;
+
+        function fetchSitePages(callback) {
+            if (cachedSitePages) { callback(cachedSitePages); return; }
+            fetch('/admin/api/pages')
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    cachedSitePages = data.pages || [];
+                    callback(cachedSitePages);
+                })
+                .catch(function() { callback([]); });
+        }
+
+        function escapeHtml(str) {
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        // Link picker modal — used by the floating toolbar's "link" button
+        function openLinkPickerModal(callback) {
+            // Remove existing modal if any
+            var existing = document.querySelector('.link-picker-modal');
+            if (existing) existing.remove();
+
+            var modal = document.createElement('div');
+            modal.className = 'link-picker-modal';
+
+            var box = document.createElement('div');
+            box.className = 'link-picker-box';
+
+            box.innerHTML = '<div class="link-picker-header"><h3>Insert Link</h3><button onclick="this.closest(\'.link-picker-modal\').remove()">&times;</button></div>';
+
+            var body = document.createElement('div');
+            body.className = 'link-picker-body';
+
+            // Pages section
+            var pagesLabel = document.createElement('div');
+            pagesLabel.className = 'page-pick-label';
+            pagesLabel.style.marginBottom = '8px';
+            pagesLabel.textContent = 'Link to a page on your site';
+            body.appendChild(pagesLabel);
+
+            var pagesContainer = document.createElement('div');
+            pagesContainer.className = 'link-picker-pages';
+            pagesContainer.innerHTML = '<div style="padding:10px; color:#7f8c8d; font-size:12px;">Loading...</div>';
+            body.appendChild(pagesContainer);
+
+            fetchSitePages(function(pages) {
+                pagesContainer.innerHTML = '';
+                pages.forEach(function(page) {
+                    var item = document.createElement('div');
+                    item.className = 'page-pick-item';
+                    var icon = page.isMain ?
+                        '<svg class="page-pick-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>' :
+                        '<svg class="page-pick-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3498db" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>';
+                    item.innerHTML = icon +
+                        '<div><span class="page-pick-title">' + escapeHtml(page.title) + '</span><br><span class="page-pick-url">' + escapeHtml(page.viewUrl) + '</span></div>';
+                    item.addEventListener('click', function() {
+                        callback(page.viewUrl);
+                        modal.remove();
+                    });
+                    pagesContainer.appendChild(item);
+                });
+            });
+
+            // Custom URL section
+            var customDiv = document.createElement('div');
+            customDiv.className = 'link-picker-custom';
+            customDiv.innerHTML = '<label>Or enter a custom URL</label>';
+            var customInput = document.createElement('input');
+            customInput.type = 'text';
+            customInput.placeholder = 'https://example.com or #section-id';
+            customDiv.appendChild(customInput);
+
+            var applyBtn = document.createElement('button');
+            applyBtn.className = 'btn btn-success';
+            applyBtn.style.cssText = 'margin-top:10px; width:100%;';
+            applyBtn.textContent = 'Apply Link';
+            applyBtn.addEventListener('click', function() {
+                var url = customInput.value.trim();
+                if (url) {
+                    callback(url);
+                    modal.remove();
+                }
+            });
+            customDiv.appendChild(applyBtn);
+
+            // Enter key on custom input
+            customInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    var url = customInput.value.trim();
+                    if (url) { callback(url); modal.remove(); }
+                }
+            });
+
+            body.appendChild(customDiv);
+            box.appendChild(body);
+            modal.appendChild(box);
+            document.body.appendChild(modal);
+
+            // Close on backdrop click
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) modal.remove();
+            });
+
+            // Focus the custom input
+            setTimeout(function() { customInput.focus(); }, 100);
         }
 
         // ==================== LAYERS ====================
@@ -1337,6 +1927,13 @@
             setStatus('Saving...', 'saving');
 
             try {
+                // End any active inline text editing so changes are committed to the model
+                var sel = editor.getSelected();
+                if (sel && sel.view && sel.view.disableEditing) {
+                    sel.view.disableEditing();
+                }
+                editor.select(null);
+
                 var html = editor.getHtml();
                 var css = editor.getCss();
 
@@ -1364,6 +1961,11 @@
             el.textContent = text;
             el.className = 'status status-' + type;
         }
+
+        // Re-inject canvas styles when frame loads (e.g. after preview toggle)
+        editor.on('canvas:frame:load', function() {
+            setTimeout(injectCanvasEditStyles, 100);
+        });
 
         // Track changes
         editor.on('change:changesCount', function() { hasUnsavedChanges = true; });

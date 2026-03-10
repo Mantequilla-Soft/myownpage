@@ -7,3 +7,5 @@ uploads/*
 !uploads/.gitkeep
 images/*
 !images/.gitkeep
+data/
+tenants/

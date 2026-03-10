@@ -3,206 +3,463 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Login</title>
+    <title>Login — Snapie</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'DM Sans', -apple-system, sans-serif;
             min-height: 100vh;
             display: flex;
             align-items: center;
             justify-content: center;
+            background: #0a0e17;
             padding: 20px;
+            overflow: hidden;
         }
-        
-        .login-container {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+
+        /* Animated background mesh */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%; left: -50%;
+            width: 200%; height: 200%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(232, 65, 66, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(52, 152, 219, 0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(155, 89, 182, 0.05) 0%, transparent 50%);
+            animation: meshDrift 20s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes meshDrift {
+            0% { transform: translate(0, 0) rotate(0deg); }
+            100% { transform: translate(-3%, 2%) rotate(3deg); }
+        }
+
+        .login-card {
+            position: relative;
+            z-index: 1;
             width: 100%;
-            max-width: 400px;
-            padding: 40px;
+            max-width: 420px;
+            background: rgba(15, 20, 30, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 20px;
+            padding: 48px 40px;
+            box-shadow: 0 24px 80px rgba(0,0,0,0.4);
         }
-        
+
         .logo {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 36px;
         }
-        
-        h1 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 10px;
+
+        .logo h1 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f0f0f0;
+            letter-spacing: -0.5px;
         }
-        
-        .subtitle {
-            color: #666;
+
+        .logo .tagline {
+            color: #5a6a7a;
             font-size: 14px;
-            margin-bottom: 30px;
+            margin-top: 6px;
         }
-        
-        .form-group {
-            margin-bottom: 20px;
+
+        /* Hive Keychain login button */
+        .keychain-section {
+            margin-bottom: 24px;
         }
-        
-        label {
+
+        .hive-username-group {
+            margin-bottom: 16px;
+        }
+
+        .hive-username-group label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
+            font-size: 13px;
             font-weight: 500;
-            font-size: 14px;
+            color: #8a95a5;
+            margin-bottom: 8px;
         }
-        
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 12px 16px;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-            font-size: 14px;
-            transition: border-color 0.3s;
+
+        .username-input-wrap {
+            display: flex;
+            align-items: center;
+            background: #141a28;
+            border: 2px solid #1e2a3a;
+            border-radius: 10px;
+            transition: border-color 0.2s;
+            overflow: hidden;
         }
-        
-        input[type="text"]:focus,
-        input[type="password"]:focus {
+
+        .username-input-wrap:focus-within {
+            border-color: #e84142;
+        }
+
+        .username-prefix {
+            padding: 0 4px 0 14px;
+            font-size: 16px;
+            color: #e84142;
+            font-weight: 600;
+            user-select: none;
+            flex-shrink: 0;
+        }
+
+        .username-input-wrap input {
+            flex: 1;
+            padding: 14px 14px 14px 2px;
+            background: none;
+            border: none;
+            color: #f0f0f0;
+            font-size: 16px;
+            font-family: 'JetBrains Mono', monospace;
             outline: none;
-            border-color: #667eea;
         }
-        
-        .btn-login {
+
+        .username-input-wrap input::placeholder {
+            color: #3a4a5a;
+        }
+
+        .btn-keychain {
             width: 100%;
-            padding: 14px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 16px;
+            background: linear-gradient(135deg, #e84142, #c0392b);
             color: white;
             border: none;
-            border-radius: 8px;
+            border-radius: 12px;
             font-size: 16px;
             font-weight: 600;
+            font-family: 'DM Sans', sans-serif;
             cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
         }
-        
-        .btn-login:hover {
+
+        .btn-keychain:hover {
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 30px rgba(232, 65, 66, 0.3);
         }
-        
-        .btn-login:active {
+
+        .btn-keychain:active {
             transform: translateY(0);
         }
-        
-        .btn-login:disabled {
+
+        .btn-keychain:disabled {
             opacity: 0.6;
             cursor: not-allowed;
+            transform: none;
         }
-        
-        .error-message {
-            background: #fee;
-            color: #c33;
-            padding: 12px;
-            border-radius: 8px;
+
+        .btn-keychain svg {
+            flex-shrink: 0;
+        }
+
+        /* Status messages */
+        .status-msg {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
             margin-bottom: 20px;
             display: none;
-            font-size: 14px;
+            line-height: 1.5;
         }
-        
-        .error-message.show {
-            display: block;
+
+        .status-msg.show { display: block; }
+
+        .status-msg.error {
+            background: rgba(231, 76, 60, 0.12);
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            color: #e74c3c;
         }
-        
-        .back-link {
+
+        .status-msg.info {
+            background: rgba(52, 152, 219, 0.12);
+            border: 1px solid rgba(52, 152, 219, 0.25);
+            color: #5dade2;
+        }
+
+        .status-msg.success {
+            background: rgba(39, 174, 96, 0.12);
+            border: 1px solid rgba(39, 174, 96, 0.25);
+            color: #27ae60;
+        }
+
+        /* No keychain fallback */
+        .no-keychain-msg {
             text-align: center;
+            color: #5a6a7a;
+            font-size: 13px;
+            line-height: 1.6;
             margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
         }
-        
-        .back-link a {
-            color: #667eea;
+
+        .no-keychain-msg a {
+            color: #e84142;
             text-decoration: none;
-            font-size: 14px;
+            font-weight: 500;
         }
-        
-        .back-link a:hover {
+
+        .no-keychain-msg a:hover {
             text-decoration: underline;
+        }
+
+        /* Loading spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            display: none;
+        }
+
+        .btn-keychain.loading .spinner { display: block; }
+        .btn-keychain.loading .btn-text { display: none; }
+        .btn-keychain.loading .btn-icon { display: none; }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* How it works */
+        .how-it-works {
+            margin-top: 28px;
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .how-it-works h3 {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #4a5a6a;
+            margin-bottom: 14px;
+            text-align: center;
+        }
+
+        .step {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 10px;
+        }
+
+        .step-num {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: rgba(232, 65, 66, 0.15);
+            color: #e84142;
+            font-size: 11px;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .step-text {
+            font-size: 13px;
+            color: #6a7a8a;
+            line-height: 1.5;
         }
     </style>
 </head>
 <body>
-    <div class="login-container">
+    <div class="login-card">
         <div class="logo">
-            <h1>Admin Panel</h1>
-            <p class="subtitle">Website Management</p>
+            <h1>Snapie</h1>
+            <p class="tagline">Build your site on Hive</p>
         </div>
-        
-        <div id="errorMessage" class="error-message"></div>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="username">Username</label>
-                <input type="text" id="username" name="username" required autocomplete="username">
+
+        <div id="statusMsg" class="status-msg"></div>
+
+        <div class="keychain-section">
+            <div class="hive-username-group">
+                <label for="hiveUsername">Your Hive username</label>
+                <div class="username-input-wrap">
+                    <span class="username-prefix">@</span>
+                    <input type="text" id="hiveUsername" placeholder="username" autocomplete="username" autofocus>
+                </div>
             </div>
-            
-            <div class="form-group">
-                <label for="password">Password</label>
-                <input type="password" id="password" name="password" required autocomplete="current-password">
-            </div>
-            
-            <button type="submit" class="btn-login" id="loginBtn">
-                Login
+
+            <button id="keychainBtn" class="btn-keychain" onclick="loginWithKeychain()">
+                <svg class="btn-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                <span class="btn-text">Login with Hive Keychain</span>
+                <div class="spinner"></div>
             </button>
-        </form>
-        
-        <div class="back-link">
-            <a href="/">← Back to Website</a>
+        </div>
+
+        <div class="no-keychain-msg" id="noKeychainMsg" style="display:none;">
+            Hive Keychain extension not detected.<br>
+            <a href="https://hive-keychain.com" target="_blank">Install Hive Keychain</a> to continue.
+        </div>
+
+        <div class="how-it-works">
+            <h3>How it works</h3>
+            <div class="step">
+                <div class="step-num">1</div>
+                <div class="step-text">Enter your Hive username</div>
+            </div>
+            <div class="step">
+                <div class="step-num">2</div>
+                <div class="step-text">Approve the login request in Keychain</div>
+            </div>
+            <div class="step">
+                <div class="step-num">3</div>
+                <div class="step-text">You're in — start building your site</div>
+            </div>
         </div>
     </div>
-    
+
     <script>
-        const form = document.getElementById('loginForm');
-        const errorMessage = document.getElementById('errorMessage');
-        const loginBtn = document.getElementById('loginBtn');
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            
-            errorMessage.classList.remove('show');
-            loginBtn.disabled = true;
-            loginBtn.textContent = 'Logging in...';
-            
-            try {
-                const response = await fetch('/admin/api/login', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username, password })
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    window.location.href = '/admin/dashboard';
-                } else {
-                    errorMessage.textContent = data.error || 'Login failed';
-                    errorMessage.classList.add('show');
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = 'Login';
+        var keychainBtn = document.getElementById('keychainBtn');
+        var statusMsg = document.getElementById('statusMsg');
+        var usernameInput = document.getElementById('hiveUsername');
+
+        // Check for Hive Keychain on load
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                if (!window.hive_keychain) {
+                    document.getElementById('noKeychainMsg').style.display = 'block';
                 }
-            } catch (error) {
-                errorMessage.textContent = 'Connection error. Please try again.';
-                errorMessage.classList.add('show');
-                loginBtn.disabled = false;
-                loginBtn.textContent = 'Login';
+            }, 1500);
+        });
+
+        // Allow Enter key to submit
+        usernameInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                loginWithKeychain();
             }
         });
+
+        function showStatus(msg, type) {
+            statusMsg.textContent = msg;
+            statusMsg.className = 'status-msg show ' + type;
+        }
+
+        function hideStatus() {
+            statusMsg.className = 'status-msg';
+        }
+
+        function setLoading(loading) {
+            keychainBtn.classList.toggle('loading', loading);
+            keychainBtn.disabled = loading;
+        }
+
+        async function loginWithKeychain() {
+            var username = usernameInput.value.trim().toLowerCase().replace(/^@/, '');
+
+            if (!username) {
+                showStatus('Please enter your Hive username.', 'error');
+                usernameInput.focus();
+                return;
+            }
+
+            if (!window.hive_keychain) {
+                showStatus('Hive Keychain extension not found. Please install it from hive-keychain.com', 'error');
+                return;
+            }
+
+            hideStatus();
+            setLoading(true);
+
+            try {
+                // Step 1: Get a challenge from the server
+                var challengeResp = await fetch('/admin/api/auth/challenge', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: username })
+                });
+
+                var challengeData = await challengeResp.json();
+                if (!challengeResp.ok) {
+                    showStatus(challengeData.error || 'Failed to get challenge.', 'error');
+                    setLoading(false);
+                    return;
+                }
+
+                var challenge = challengeData.challenge;
+
+                // Step 2: Ask Keychain to sign the challenge
+                showStatus('Approve the request in Hive Keychain...', 'info');
+
+                window.hive_keychain.requestSignBuffer(
+                    username,
+                    challenge,
+                    'Posting',
+                    async function(response) {
+                        if (!response.success) {
+                            showStatus(
+                                response.error === 'user_cancel'
+                                    ? 'Login cancelled.'
+                                    : 'Keychain error: ' + (response.message || response.error || 'Unknown error'),
+                                'error'
+                            );
+                            setLoading(false);
+                            return;
+                        }
+
+                        // Step 3: Send signature to server for verification
+                        showStatus('Verifying...', 'info');
+
+                        try {
+                            var verifyResp = await fetch('/admin/api/auth/verify', {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                body: JSON.stringify({
+                                    username: username,
+                                    challenge: challenge,
+                                    signature: response.result
+                                })
+                            });
+
+                            var verifyData = await verifyResp.json();
+
+                            if (verifyResp.ok && verifyData.success) {
+                                showStatus(
+                                    verifyData.isNew
+                                        ? 'Welcome to Snapie, @' + username + '! Setting up your site...'
+                                        : 'Welcome back, @' + username + '!',
+                                    'success'
+                                );
+                                setTimeout(function() {
+                                    window.location.href = '/admin/dashboard';
+                                }, 800);
+                            } else {
+                                showStatus(verifyData.error || 'Verification failed.', 'error');
+                                setLoading(false);
+                            }
+                        } catch (err) {
+                            showStatus('Connection error. Please try again.', 'error');
+                            setLoading(false);
+                        }
+                    }
+                );
+
+            } catch (err) {
+                showStatus('Connection error. Please try again.', 'error');
+                setLoading(false);
+            }
+        }
     </script>
 </body>
 </html>
