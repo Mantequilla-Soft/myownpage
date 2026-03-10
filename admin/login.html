@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login — Snapie</title>
+    <title>Login — My Own Page</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
@@ -282,8 +282,8 @@
 <body>
     <div class="login-card">
         <div class="logo">
-            <h1>Snapie</h1>
-            <p class="tagline">Build your site on Hive</p>
+            <h1>My Own Page</h1>
+            <p class="tagline">Build your site on Hive &middot; Powered by <strong style="color:#e84142;">Snapie</strong></p>
         </div>
 
         <div id="statusMsg" class="status-msg"></div>
@@ -437,7 +437,7 @@
                             if (verifyResp.ok && verifyData.success) {
                                 showStatus(
                                     verifyData.isNew
-                                        ? 'Welcome to Snapie, @' + username + '! Setting up your site...'
+                                        ? 'Welcome, @' + username + '! Setting up your page...'
                                         : 'Welcome back, @' + username + '!',
                                     'success'
                                 );

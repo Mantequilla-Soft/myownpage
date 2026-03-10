@@ -33,7 +33,7 @@ db.exec(`
     storage_used INTEGER DEFAULT 0,
     subscription_status TEXT DEFAULT 'active',
     subscription_expires TEXT,
-    site_title TEXT DEFAULT 'My Site'
+    site_title TEXT DEFAULT 'My Own Page'
   );
 `);
 
@@ -145,7 +145,7 @@ async function ensureTenantDirs(username) {
     <section style="min-height:100vh; display:flex; align-items:center; justify-content:center; text-align:center; background:linear-gradient(135deg, #1a1a2e, #16213e); padding:60px 20px;">
         <div style="max-width:700px;">
             <h1 style="color:white; font-size:48px; margin-bottom:20px;">Welcome to @${username}'s site</h1>
-            <p style="color:#a8b4c4; font-size:20px; margin-bottom:30px;">This site was built with Snapie</p>
+            <p style="color:#a8b4c4; font-size:20px; margin-bottom:30px;">My Own Page — powered by Snapie</p>
         </div>
     </section>
 </body>
@@ -190,7 +190,7 @@ app.post('/admin/api/auth/challenge', (req, res) => {
   const clean = username.toLowerCase().replace(/[^a-z0-9.-]/g, '');
   if (!clean) return res.status(400).json({ error: 'Invalid username' });
 
-  const challenge = `snapie_login_${clean}_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
+  const challenge = `myownpage_login_${clean}_${Date.now()}_${crypto.randomBytes(16).toString('hex')}`;
 
   // Store challenge with 5-minute expiry
   authChallenges.set(challenge, { username: clean, expires: Date.now() + 5 * 60 * 1000 });
@@ -988,7 +988,7 @@ function resolveTenantPath(username, pagePath) {
 app.listen(PORT, () => {
   const userCount = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
   console.log(`\n${'='.repeat(55)}`);
-  console.log(`  Snapie — Website Builder for Hive`);
+  console.log(`  My Own Page — Powered by Snapie`);
   console.log(`${'='.repeat(55)}`);
   console.log(`  Server:     http://localhost:${PORT}`);
   console.log(`  Admin:      http://localhost:${PORT}/admin/login`);
