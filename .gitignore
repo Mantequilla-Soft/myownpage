@@ -9,3 +9,7 @@ images/*
 !images/.gitkeep
 data/
 tenants/
+
+# internal docs
+
+/internal-docs/
