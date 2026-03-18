@@ -497,6 +497,34 @@
         }
         .footer a { color: var(--accent); }
 
+        /* ---- BUTTER BOARD ---- */
+        .butter-board { padding: 100px 20px; max-width: 900px; margin: 0 auto; }
+        .butter-board h2 { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; text-align: center; margin-bottom: 12px; }
+        .bb-subtitle { color: var(--text-muted); font-size: 18px; text-align: center; margin-bottom: 48px; }
+        .bb-subtitle strong { color: var(--text); }
+        .bb-stats { display: flex; gap: 20px; justify-content: center; margin-bottom: 40px; }
+        .bb-stat { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 16px 28px; text-align: center; }
+        .bb-stat-num { font-size: 28px; font-weight: 800; color: var(--accent); }
+        .bb-stat-label { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+        .bb-list { display: flex; flex-direction: column; gap: 8px; }
+        .bb-row { display: flex; align-items: center; gap: 16px; padding: 14px 20px; background: var(--surface); border: 1px solid var(--border); border-radius: 10px; transition: border-color 0.2s; }
+        .bb-row:hover { border-color: #2a3545; }
+        .bb-rank { width: 32px; font-weight: 800; color: var(--text-muted); font-size: 14px; text-align: center; }
+        .bb-avatar { width: 36px; height: 36px; border-radius: 50%; border: 2px solid var(--border); object-fit: cover; }
+        .bb-name { font-weight: 600; font-size: 15px; flex: 1; }
+        .bb-badge { padding: 4px 12px; border-radius: 100px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+        .bb-badge-lord { background: rgba(232,65,66,0.2); color: #ff6b6b; }
+        .bb-badge-supreme { background: rgba(232,65,66,0.15); color: #e84142; }
+        .bb-badge-butterist { background: rgba(188,140,255,0.15); color: #bc8cff; }
+        .bb-badge-butterino { background: rgba(63,185,80,0.15); color: #3fb950; }
+        .bb-hp { font-weight: 700; font-size: 15px; color: var(--text-muted); }
+        .bb-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 16px; }
+        .bb-cta { display: inline-block; margin-top: 32px; padding: 14px 32px; background: var(--accent); color: #fff; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all 0.2s; }
+        .bb-cta:hover { box-shadow: 0 6px 24px var(--accent-glow); transform: translateY(-2px); }
+        .bb-tiers { display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; }
+        .bb-tier { padding: 8px 16px; border-radius: 8px; font-size: 12px; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); }
+        .bb-tier span { font-weight: 700; }
+
         /* ---- RESPONSIVE ---- */
         @media (max-width: 900px) {
             .hero h1 { font-size: 42px; }
@@ -508,7 +536,10 @@
         @media (max-width: 600px) {
             .hero h1 { font-size: 32px; }
             .hero p { font-size: 16px; }
-            .features-header h2, .templates-header h2, .how-section h2, .pricing h2 { font-size: 28px; }
+            .features-header h2, .templates-header h2, .how-section h2, .pricing h2, .butter-board h2 { font-size: 28px; }
+            .bb-stats { flex-direction: column; align-items: center; }
+            .bb-row { gap: 10px; padding: 10px 14px; }
+            .bb-hp { font-size: 13px; }
             .templates-scroll { grid-template-columns: repeat(2, 1fr); }
             .browser-body { height: 250px; }
             .browser-body h2 { font-size: 24px; }
@@ -525,6 +556,7 @@
             <a href="#features">Features</a>
             <a href="#templates">Templates</a>
             <a href="#pricing">Pricing</a>
+            <a href="#butter-board">Supporters</a>
             <a href="/admin/login" class="nav-cta">Get Started</a>
         </div>
     </nav>
@@ -706,11 +738,11 @@
     <!-- PRICING -->
     <section class="pricing" id="pricing">
         <div class="pricing-inner">
-            <h2>Simple pricing</h2>
-            <p class="pricing-sub">One plan. Everything included. Paid in HBD.</p>
+            <h2>Free to use. Powered by delegation.</h2>
+            <p class="pricing-sub">Snapie is free for everyone. Support the project by delegating HP &mdash; your stake stays yours, you can undelegate anytime, and you get a badge for it.</p>
             <div class="price-card">
-                <div class="price-amount"><span class="currency">HBD</span> 2</div>
-                <div class="price-period">per month</div>
+                <div class="price-amount" style="font-size:48px;">Free</div>
+                <div class="price-period">no credit card, no HBD, no catch</div>
                 <ul class="price-features">
                     <li><span class="price-check">&#10003;</span> Visual page builder</li>
                     <li><span class="price-check">&#10003;</span> Unlimited pages</li>
@@ -718,10 +750,52 @@
                     <li><span class="price-check">&#10003;</span> All 10 templates</li>
                     <li><span class="price-check">&#10003;</span> Hive blog & witness components</li>
                     <li><span class="price-check">&#10003;</span> yourname.snapie.io subdomain</li>
-                    <li><span class="price-check">&#10003;</span> No ads, ever</li>
+                    <li><span class="price-check">&#10003;</span> Small "Powered by Snapie" banner</li>
                 </ul>
-                <a href="/admin/login" class="price-cta">Get Started</a>
+                <a href="/admin/login" class="price-cta">Start Building &mdash; Free</a>
             </div>
+            <div style="margin-top:28px; text-align:center;">
+                <p style="color:var(--text-muted); font-size:14px; max-width:500px; margin:0 auto 16px; line-height:1.6;">
+                    Want to remove the banner and get recognized? Delegate HP &mdash; your stake stays yours.
+                </p>
+                <a href="#" class="bb-cta bb-delegate-btn" style="margin:0;">Delegate HP to <strong id="bbTargetPricing">@...</strong></a>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:12px;">
+                    See the <a href="#butter-board" style="color:var(--accent);">Butter Board</a> below for tiers &amp; leaderboard
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BUTTER BOARD -->
+    <section class="butter-board" id="butter-board">
+        <h2>&#x1F9C8; The Butter Board</h2>
+        <p class="bb-subtitle">Support Snapie by delegating HP to <strong id="bbTarget">@...</strong></p>
+
+        <div class="bb-tiers">
+            <div class="bb-tier"><span class="bb-badge bb-badge-butterino">Butterino</span> 100+ HP</div>
+            <div class="bb-tier"><span class="bb-badge bb-badge-butterist">Butterist</span> 500+ HP</div>
+            <div class="bb-tier"><span class="bb-badge bb-badge-supreme">Butterist Supreme</span> 1,000+ HP</div>
+            <div class="bb-tier"><span class="bb-badge bb-badge-lord">Butterist Lord</span> 5,001+ HP</div>
+        </div>
+
+        <div class="bb-stats">
+            <div class="bb-stat">
+                <div class="bb-stat-num" id="bbTotalHP">&mdash;</div>
+                <div class="bb-stat-label">Total HP Delegated</div>
+            </div>
+            <div class="bb-stat">
+                <div class="bb-stat-num" id="bbDelegators">&mdash;</div>
+                <div class="bb-stat-label">Supporters</div>
+            </div>
+        </div>
+
+        <div class="bb-list" id="bbList">
+            <div class="bb-empty">Loading supporters...</div>
+        </div>
+
+        <div style="text-align:center;">
+            <a href="#" class="bb-cta bb-delegate-btn" id="bbDelegateBtn">Delegate HP to <strong id="bbTargetBoard">@...</strong></a>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:12px;">Opens Hive Keychain &mdash; your HP stays in your account, delegation is reversible anytime</p>
         </div>
     </section>
 
@@ -737,5 +811,67 @@
         <p>My Own Page &middot; Powered by <a href="https://hive.blog/@snapie" target="_blank">@Snapie</a> &middot; Built on the Hive blockchain</p>
     </footer>
 
+<script>
+(function() {
+  var badgeClasses = { lord: 'bb-badge-lord', supreme: 'bb-badge-supreme', butterist: 'bb-badge-butterist', butterino: 'bb-badge-butterino' };
+  var delegationTarget = '';
+
+  async function loadButterBoard() {
+    try {
+      var resp = await fetch('/api/butter-board');
+      var data = await resp.json();
+
+      delegationTarget = data.delegationTarget || '';
+      var atTarget = '@' + delegationTarget;
+      document.getElementById('bbTarget').textContent = atTarget;
+      document.getElementById('bbTargetPricing').textContent = atTarget;
+      document.getElementById('bbTargetBoard').textContent = atTarget;
+      document.getElementById('bbTotalHP').textContent = Math.round(data.totalHP).toLocaleString() + ' HP';
+      document.getElementById('bbDelegators').textContent = data.totalDelegators;
+
+      var list = document.getElementById('bbList');
+      if (!data.delegators || data.delegators.length === 0) {
+        list.innerHTML = '<div class="bb-empty">No supporters yet. Be the first!</div>';
+        return;
+      }
+
+      list.innerHTML = data.delegators.map(function(d, i) {
+        return '<div class="bb-row">' +
+          '<span class="bb-rank">#' + (i + 1) + '</span>' +
+          '<img class="bb-avatar" src="https://images.hive.blog/u/' + d.username + '/avatar/small" alt="@' + d.username + '" onerror="this.style.display=\'none\'">' +
+          '<span class="bb-name">@' + d.username + '</span>' +
+          '<span class="bb-badge ' + (badgeClasses[d.tier] || '') + '">' + d.tierLabel + '</span>' +
+          '<span class="bb-hp">' + Math.round(d.hp).toLocaleString() + ' HP</span>' +
+        '</div>';
+      }).join('');
+    } catch (e) {
+      console.error('Butter Board load error:', e);
+      document.getElementById('bbList').innerHTML = '<div class="bb-empty">Could not load supporters.</div>';
+    }
+  }
+
+  function handleDelegate(e) {
+    e.preventDefault();
+    if (!delegationTarget) return;
+    if (window.hive_keychain) {
+      window.hive_keychain.requestDelegation(null, delegationTarget, '100.000', 'HP', function(response) {
+        if (response.success) {
+          alert('Thank you for your delegation! It will appear on the board within an hour.');
+          loadButterBoard();
+        }
+      });
+    } else {
+      window.open('https://hivesigner.com/sign/delegate-vesting-shares?delegatee=' + delegationTarget + '&vesting_shares=100%20HP', '_blank');
+    }
+  }
+
+  var delegateBtns = document.querySelectorAll('.bb-delegate-btn');
+  for (var i = 0; i < delegateBtns.length; i++) {
+    delegateBtns[i].addEventListener('click', handleDelegate);
+  }
+
+  loadButterBoard();
+})();
+</script>
 </body>
 </html>

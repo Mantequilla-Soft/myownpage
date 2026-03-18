@@ -52,6 +52,141 @@ db.exec(`
   );
 `);
 
+db.exec(`
+  CREATE TABLE IF NOT EXISTS delegations (
+    delegator TEXT PRIMARY KEY,
+    vests REAL DEFAULT 0,
+    hp REAL DEFAULT 0,
+    tier TEXT DEFAULT 'free',
+    last_checked TEXT DEFAULT (datetime('now'))
+  );
+`);
+
+// ==================== DELEGATION SYNC ====================
+
+const DELEGATION_TARGET = process.env.DELEGATION_TARGET || 'mantequilla-soft';
+const DELEGATION_TIERS = [
+  { min: 5001, tier: 'lord', label: 'Butterist Lord' },
+  { min: 1000, tier: 'supreme', label: 'Butterist Supreme' },
+  { min: 500, tier: 'butterist', label: 'Butterist' },
+  { min: 100, tier: 'butterino', label: 'Butterino' },
+  { min: 0, tier: 'free', label: 'Free' }
+];
+
+const HIVE_APIS = [
+  'https://api.hive.blog',
+  'https://api.openhive.network',
+  'https://anyx.io'
+];
+
+function getDelegationTier(hp) {
+  for (const t of DELEGATION_TIERS) {
+    if (hp >= t.min) return t;
+  }
+  return DELEGATION_TIERS[DELEGATION_TIERS.length - 1];
+}
+
+function vestsToHP(vests, totalVestingFundHive, totalVestingShares) {
+  return vests * (totalVestingFundHive / totalVestingShares);
+}
+
+async function hiveApiCall(method, params) {
+  const payload = { jsonrpc: '2.0', method, params, id: 1 };
+  for (const api of HIVE_APIS) {
+    try {
+      const resp = await axios.post(api, payload, { timeout: 10000 });
+      if (resp.data && resp.data.result) return resp.data.result;
+    } catch (e) { /* try next node */ }
+  }
+  throw new Error(`All Hive API nodes failed for ${method}`);
+}
+
+// Check a single user's delegation to the target account and upsert into DB
+async function checkUserDelegation(username) {
+  try {
+    const globalProps = await hiveApiCall('condenser_api.get_dynamic_global_properties', []);
+    const totalVestingFundHive = parseFloat(globalProps.total_vesting_fund_hive.split(' ')[0]);
+    const totalVestingShares = parseFloat(globalProps.total_vesting_shares.split(' ')[0]);
+
+    const result = await hiveApiCall('database_api.find_vesting_delegations', { account: username });
+    const delegations = result.delegations || [];
+    const match = delegations.find(d => d.delegatee === DELEGATION_TARGET);
+
+    const upsert = db.prepare(`
+      INSERT INTO delegations (delegator, vests, hp, tier, last_checked)
+      VALUES (?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(delegator) DO UPDATE SET
+        vests = excluded.vests, hp = excluded.hp, tier = excluded.tier, last_checked = datetime('now')
+    `);
+
+    if (match) {
+      const vestsAmount = typeof match.vesting_shares === 'object'
+        ? parseInt(match.vesting_shares.amount) / Math.pow(10, match.vesting_shares.precision || 6)
+        : parseFloat(match.vesting_shares);
+      const hp = vestsToHP(vestsAmount, totalVestingFundHive, totalVestingShares);
+      const tier = getDelegationTier(hp);
+      upsert.run(username, vestsAmount, hp, tier.tier);
+    } else {
+      // User has no delegation to target — remove from table if present
+      db.prepare('DELETE FROM delegations WHERE delegator = ?').run(username);
+    }
+  } catch (err) {
+    console.error(`[Butter Board] Check delegation for @${username} failed:`, err.message);
+  }
+}
+
+// Sync all incoming delegations via Ecency's indexed API
+async function syncDelegations() {
+  try {
+    console.log('[Butter Board] Syncing delegations...');
+
+    // 1. Get global properties for VESTS → HP conversion
+    const globalProps = await hiveApiCall('condenser_api.get_dynamic_global_properties', []);
+    const totalVestingFundHive = parseFloat(globalProps.total_vesting_fund_hive.split(' ')[0]);
+    const totalVestingShares = parseFloat(globalProps.total_vesting_shares.split(' ')[0]);
+
+    // 2. Fetch all incoming delegations via Ecency's API
+    const resp = await axios.get(
+      `https://ecency.com/private-api/received-vesting/${DELEGATION_TARGET}`,
+      { timeout: 15000 }
+    );
+    const incoming = resp.data && resp.data.list ? resp.data.list : [];
+
+    // 3. Update database
+    const upsert = db.prepare(`
+      INSERT INTO delegations (delegator, vests, hp, tier, last_checked)
+      VALUES (?, ?, ?, ?, datetime('now'))
+      ON CONFLICT(delegator) DO UPDATE SET
+        vests = excluded.vests, hp = excluded.hp, tier = excluded.tier, last_checked = datetime('now')
+    `);
+
+    const currentDelegators = new Set();
+
+    const updateAll = db.transaction(() => {
+      for (const d of incoming) {
+        const vestsAmount = parseFloat(d.vesting_shares);
+        const hp = vestsToHP(vestsAmount, totalVestingFundHive, totalVestingShares);
+        const tier = getDelegationTier(hp);
+        upsert.run(d.delegator, vestsAmount, hp, tier.tier);
+        currentDelegators.add(d.delegator);
+      }
+
+      // Remove delegators no longer in the list (undelegated)
+      const existing = db.prepare('SELECT delegator FROM delegations').all();
+      for (const row of existing) {
+        if (!currentDelegators.has(row.delegator)) {
+          db.prepare('DELETE FROM delegations WHERE delegator = ?').run(row.delegator);
+        }
+      }
+    });
+
+    updateAll();
+    console.log(`[Butter Board] Synced ${incoming.length} delegations`);
+  } catch (err) {
+    console.error('[Butter Board] Sync error:', err.message);
+  }
+}
+
 // ==================== SESSION ====================
 
 app.use(session({
@@ -280,6 +415,9 @@ app.post('/admin/api/auth/verify', async (req, res) => {
     req.session.authenticated = true;
     req.session.username = clean;
 
+    // Check delegation status in background (don't block login)
+    checkUserDelegation(clean);
+
     const hasHomepage = fsSync.existsSync(getTenantIndexFile(clean));
     res.json({
       success: true,
@@ -308,6 +446,9 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
   const storageUsed = await calculateStorageUsed(req.session.username);
   db.prepare('UPDATE users SET storage_used = ? WHERE username = ?').run(storageUsed, req.session.username);
 
+  const delegation = db.prepare('SELECT hp, tier FROM delegations WHERE delegator = ?').get(req.session.username);
+  const tierInfo = delegation ? getDelegationTier(delegation.hp) : DELEGATION_TIERS[DELEGATION_TIERS.length - 1];
+
   res.json({
     username: user.username,
     siteTitle: user.site_title,
@@ -315,7 +456,10 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
     storageUsed,
     storageLimit: MAX_STORAGE_BYTES,
     subscriptionStatus: user.subscription_status,
-    siteUrl: `http://${user.username}.${SNAPIE_DOMAIN}`
+    siteUrl: `http://${user.username}.${SNAPIE_DOMAIN}`,
+    delegationHP: delegation ? delegation.hp : 0,
+    delegationTier: tierInfo.tier,
+    delegationTierLabel: tierInfo.label
   });
 });
 
@@ -392,6 +536,49 @@ app.use('/css', express.static(path.join(__dirname, 'css')));
 app.use('/js', express.static(path.join(__dirname, 'js')));
 app.use('/images', express.static(path.join(__dirname, 'images')));
 
+// ==================== TENANT PAGE SERVING (with banner/badge injection) ====================
+
+const TIER_LABELS = {
+  lord: 'Butterist Lord',
+  supreme: 'Butterist Supreme',
+  butterist: 'Butterist',
+  butterino: 'Butterino'
+};
+
+async function serveTenantPage(res, filePath, username) {
+  let html = await fs.readFile(filePath, 'utf8');
+
+  const delegation = db.prepare('SELECT tier, hp FROM delegations WHERE delegator = ?').get(username);
+  const tier = delegation ? delegation.tier : 'free';
+
+  let injection = '';
+  if (tier === 'free') {
+    injection = `
+<!-- snapie-banner -->
+<div style="position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;color:#a8b4c4;text-align:center;padding:10px 20px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;border-top:1px solid #2a2a4e;">
+  This page is powered by <a href="https://snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">Snapie</a> &mdash;
+  <a href="https://snapie.io/#butter-board" style="color:#58a6ff;text-decoration:none;">Support us with HP delegation!</a>
+</div>`;
+  } else {
+    const label = TIER_LABELS[tier] || tier;
+    injection = `
+<!-- snapie-badge -->
+<div style="position:fixed;bottom:0;right:20px;background:#1a1a2e;color:#a8b4c4;padding:6px 16px;font-size:11px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;border-radius:8px 8px 0 0;border:1px solid #2a2a4e;border-bottom:none;">
+  Powered by <a href="https://snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">@${DELEGATION_TARGET}</a> &mdash; ${label} Member
+</div>`;
+  }
+
+  if (html.includes('</body>')) {
+    html = html.replace('</body>', injection + '\n</body>');
+  } else {
+    html += injection;
+  }
+
+  res.set('Cache-Control', 'no-store');
+  res.set('Content-Type', 'text/html');
+  res.send(html);
+}
+
 // ==================== SUBDOMAIN ROUTING (public tenant sites) ====================
 
 app.use((req, res, next) => {
@@ -443,8 +630,7 @@ app.get('*', (req, res, next) => {
   if (reqPath === '/' || reqPath === '') {
     const indexFile = getTenantIndexFile(username);
     if (fsSync.existsSync(indexFile)) {
-      res.set('Cache-Control', 'no-store');
-      return res.sendFile(indexFile);
+      return serveTenantPage(res, indexFile, username);
     }
     // No homepage yet — show a coming soon page
     return res.send(`<!DOCTYPE html>
@@ -478,8 +664,7 @@ p{color:#5a6a7a;font-size:16px;line-height:1.6}
   if (pageMatch) {
     const filePath = path.join(getTenantHtmlDir(username), pageMatch[1] + '.html');
     if (fsSync.existsSync(filePath)) {
-      res.set('Cache-Control', 'no-store');
-      return res.sendFile(filePath);
+      return serveTenantPage(res, filePath, username);
     }
     return res.status(404).send('Page not found');
   }
@@ -487,15 +672,13 @@ p{color:#5a6a7a;font-size:16px;line-height:1.6}
   // Try serving from html dir directly (for /about, /contact, etc.)
   const htmlFile = path.join(getTenantHtmlDir(username), path.basename(reqPath) + '.html');
   if (fsSync.existsSync(htmlFile)) {
-    res.set('Cache-Control', 'no-store');
-    return res.sendFile(htmlFile);
+    return serveTenantPage(res, htmlFile, username);
   }
 
   // Fallback: serve index
   const indexFile = getTenantIndexFile(username);
   if (fsSync.existsSync(indexFile)) {
-    res.set('Cache-Control', 'no-store');
-    return res.sendFile(indexFile);
+    return serveTenantPage(res, indexFile, username);
   }
 
   next();
@@ -512,8 +695,7 @@ app.get('/site/:username', (req, res) => {
   }
   const indexFile = getTenantIndexFile(username);
   if (fsSync.existsSync(indexFile)) {
-    res.set('Cache-Control', 'no-store');
-    return res.sendFile(indexFile);
+    return serveTenantPage(res, indexFile, username);
   }
   // Tenant exists but no homepage yet
   res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>@${username}</title><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:-apple-system,sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0a0e17;color:#f0f0f0;text-align:center;padding:40px}img{width:100px;height:100px;border-radius:50%;border:3px solid rgba(255,255,255,0.1);margin-bottom:24px;object-fit:cover}h1{font-size:32px;margin-bottom:12px}p{color:#5a6a7a;font-size:16px}</style></head><body><div><img src="https://images.hive.blog/u/${username}/avatar/original" alt="@${username}"><h1>@${username}</h1><p>This site is being set up. Check back soon.</p></div></body></html>`);
@@ -523,8 +705,7 @@ app.get('/site/:username/pages/:page', (req, res) => {
   const username = req.params.username.toLowerCase();
   const filePath = path.join(getTenantHtmlDir(username), req.params.page + '.html');
   if (fsSync.existsSync(filePath)) {
-    res.set('Cache-Control', 'no-store');
-    return res.sendFile(filePath);
+    return serveTenantPage(res, filePath, username);
   }
   res.status(404).send('Page not found');
 });
@@ -615,6 +796,37 @@ app.post('/api/v1/message/', async (req, res) => {
     console.error('Contact form error:', error);
     res.status(500).json({ message: ['Failed to send message. Please try again later.'] });
   }
+});
+
+// ==================== BUTTER BOARD API ====================
+
+app.get('/api/butter-board', (req, res) => {
+  const delegators = db.prepare(
+    "SELECT delegator, hp, tier, last_checked FROM delegations WHERE tier != 'free' ORDER BY hp DESC"
+  ).all();
+
+  const tierLabels = {
+    lord: 'Butterist Lord',
+    supreme: 'Butterist Supreme',
+    butterist: 'Butterist',
+    butterino: 'Butterino'
+  };
+
+  const totalHP = delegators.reduce((sum, d) => sum + d.hp, 0);
+  const lastSync = delegators.length > 0 ? delegators[0].last_checked : null;
+
+  res.json({
+    delegators: delegators.map(d => ({
+      username: d.delegator,
+      hp: d.hp,
+      tier: d.tier,
+      tierLabel: tierLabels[d.tier] || d.tier
+    })),
+    totalHP,
+    totalDelegators: delegators.length,
+    delegationTarget: DELEGATION_TARGET,
+    lastSync
+  });
 });
 
 // ==================== ADMIN UI ROUTES ====================
@@ -1096,4 +1308,8 @@ app.listen(PORT, () => {
   console.log(`  Users:      ${userCount} registered`);
   console.log(`  Domain:     *.${SNAPIE_DOMAIN}`);
   console.log(`${'='.repeat(55)}\n`);
+
+  // Start delegation sync: run now + every hour
+  syncDelegations();
+  setInterval(syncDelegations, 60 * 60 * 1000);
 });

@@ -324,6 +324,10 @@
                 <h3>Your Site URL</h3>
                 <div class="number" style="font-size: 14px; margin-top: 14px; word-break: break-all;" id="siteUrl">-</div>
             </div>
+            <div class="stat-card">
+                <h3>HP Delegation</h3>
+                <div class="number" style="font-size: 16px; margin-top: 14px;" id="delegationStatus">-</div>
+            </div>
         </div>
         
         <div class="section">
@@ -387,6 +391,16 @@
                 const usedMB = (user.storageUsed / 1024 / 1024).toFixed(1);
                 const limitMB = (user.storageLimit / 1024 / 1024).toFixed(0);
                 document.getElementById('storageUsed').textContent = usedMB + ' / ' + limitMB + ' MB';
+
+                // Delegation status
+                var delEl = document.getElementById('delegationStatus');
+                if (user.delegationHP > 0) {
+                    delEl.innerHTML = '<span style="color:#3fb950;">' + Math.round(user.delegationHP) + ' HP</span><br>' +
+                        '<span style="font-size:12px;color:#999;">' + user.delegationTierLabel + '</span>';
+                } else {
+                    delEl.innerHTML = '<span style="font-size:13px;">No delegation</span><br>' +
+                        '<a href="/#butter-board" style="font-size:12px;color:#667eea;">Support Snapie</a>';
+                }
             } catch (e) {
                 console.error('Error loading user info:', e);
             }
