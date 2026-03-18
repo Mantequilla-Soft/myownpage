@@ -521,6 +521,12 @@
         .bb-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 16px; }
         .bb-cta { display: inline-block; margin-top: 32px; padding: 14px 32px; background: var(--accent); color: #fff; border-radius: 8px; font-weight: 700; font-size: 15px; text-decoration: none; transition: all 0.2s; }
         .bb-cta:hover { box-shadow: 0 6px 24px var(--accent-glow); transform: translateY(-2px); }
+        .bb-delegate-picker { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+        .bb-delegate-pick { padding: 12px 20px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; text-decoration: none; text-align: center; min-width: 120px; }
+        .bb-delegate-pick:hover { border-color: var(--accent); background: var(--accent-glow); }
+        .bb-delegate-pick .bb-pick-hp { font-size: 18px; font-weight: 800; display: block; margin-bottom: 2px; }
+        .bb-delegate-pick .bb-pick-tier { font-size: 11px; color: var(--text-muted); display: block; }
+        .bb-delegate-pick-custom { border-style: dashed; }
         .bb-tiers { display: flex; gap: 12px; justify-content: center; margin-bottom: 40px; flex-wrap: wrap; }
         .bb-tier { padding: 8px 16px; border-radius: 8px; font-size: 12px; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); }
         .bb-tier span { font-weight: 700; }
@@ -756,11 +762,17 @@
             </div>
             <div style="margin-top:28px; text-align:center;">
                 <p style="color:var(--text-muted); font-size:14px; max-width:500px; margin:0 auto 16px; line-height:1.6;">
-                    Want to remove the banner and get recognized? Delegate HP &mdash; your stake stays yours.
+                    Want to remove the banner and get recognized? Delegate HP to <strong id="bbTargetPricing">@...</strong> &mdash; pick your tier:
                 </p>
-                <a href="#" class="bb-cta bb-delegate-btn" style="margin:0;">Delegate HP to <strong id="bbTargetPricing">@...</strong></a>
-                <p style="color:var(--text-muted); font-size:12px; margin-top:12px;">
-                    See the <a href="#butter-board" style="color:var(--accent);">Butter Board</a> below for tiers &amp; leaderboard
+                <div class="bb-delegate-picker">
+                    <a href="#" class="bb-delegate-pick" data-hp="100"><span class="bb-pick-hp">100 HP</span><span class="bb-pick-tier">Butterino</span></a>
+                    <a href="#" class="bb-delegate-pick" data-hp="500"><span class="bb-pick-hp">500 HP</span><span class="bb-pick-tier">Butterist</span></a>
+                    <a href="#" class="bb-delegate-pick" data-hp="1000"><span class="bb-pick-hp">1,000 HP</span><span class="bb-pick-tier">Butterist Supreme</span></a>
+                    <a href="#" class="bb-delegate-pick" data-hp="5001"><span class="bb-pick-hp">5,001 HP</span><span class="bb-pick-tier">Butterist Lord</span></a>
+                    <a href="#" class="bb-delegate-pick bb-delegate-pick-custom" data-hp="custom"><span class="bb-pick-hp">Custom</span><span class="bb-pick-tier">Any amount</span></a>
+                </div>
+                <p style="color:var(--text-muted); font-size:12px; margin-top:16px;">
+                    Your HP stays in your account &mdash; delegation is reversible anytime. See the <a href="#butter-board" style="color:var(--accent);">Butter Board</a> below.
                 </p>
             </div>
         </div>
@@ -794,8 +806,16 @@
         </div>
 
         <div style="text-align:center;">
-            <a href="#" class="bb-cta bb-delegate-btn" id="bbDelegateBtn">Delegate HP to <strong id="bbTargetBoard">@...</strong></a>
-            <p style="color:var(--text-muted); font-size:12px; margin-top:12px;">Opens Hive Keychain &mdash; your HP stays in your account, delegation is reversible anytime</p>
+            <p style="color:var(--text); font-size:16px; font-weight:600; margin-bottom:4px;">Delegate to <strong id="bbTargetBoard">@...</strong></p>
+            <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Pick a tier or enter a custom amount</p>
+            <div class="bb-delegate-picker">
+                <a href="#" class="bb-delegate-pick" data-hp="100"><span class="bb-pick-hp">100 HP</span><span class="bb-pick-tier">Butterino</span></a>
+                <a href="#" class="bb-delegate-pick" data-hp="500"><span class="bb-pick-hp">500 HP</span><span class="bb-pick-tier">Butterist</span></a>
+                <a href="#" class="bb-delegate-pick" data-hp="1000"><span class="bb-pick-hp">1,000 HP</span><span class="bb-pick-tier">Butterist Supreme</span></a>
+                <a href="#" class="bb-delegate-pick" data-hp="5001"><span class="bb-pick-hp">5,001 HP</span><span class="bb-pick-tier">Butterist Lord</span></a>
+                <a href="#" class="bb-delegate-pick bb-delegate-pick-custom" data-hp="custom"><span class="bb-pick-hp">Custom</span><span class="bb-pick-tier">Any amount</span></a>
+            </div>
+            <p style="color:var(--text-muted); font-size:12px; margin-top:16px;">Opens Hive Keychain &mdash; your HP stays in your account, delegation is reversible anytime</p>
         </div>
     </section>
 
@@ -850,25 +870,36 @@
     }
   }
 
-  function handleDelegate(e) {
-    e.preventDefault();
+  function triggerDelegation(hp) {
     if (!delegationTarget) return;
+    var amount = parseFloat(hp).toFixed(3);
     if (window.hive_keychain) {
-      window.hive_keychain.requestDelegation(null, delegationTarget, '100.000', 'HP', function(response) {
+      window.hive_keychain.requestDelegation(null, delegationTarget, amount, 'HP', function(response) {
         if (response.success) {
           alert('Thank you for your delegation! It will appear on the board within an hour.');
           loadButterBoard();
         }
       });
     } else {
-      window.open('https://hivesigner.com/sign/delegate-vesting-shares?delegatee=' + delegationTarget + '&vesting_shares=100%20HP', '_blank');
+      window.open('https://hivesigner.com/sign/delegate-vesting-shares?delegatee=' + delegationTarget + '&vesting_shares=' + amount + '%20HP', '_blank');
     }
   }
 
-  var delegateBtns = document.querySelectorAll('.bb-delegate-btn');
-  for (var i = 0; i < delegateBtns.length; i++) {
-    delegateBtns[i].addEventListener('click', handleDelegate);
-  }
+  document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.bb-delegate-pick');
+    if (!btn) return;
+    e.preventDefault();
+    var hp = btn.getAttribute('data-hp');
+    if (hp === 'custom') {
+      var input = prompt('Enter the amount of HP you want to delegate:');
+      if (!input) return;
+      var val = parseFloat(input);
+      if (isNaN(val) || val <= 0) { alert('Please enter a valid number.'); return; }
+      triggerDelegation(val);
+    } else {
+      triggerDelegation(hp);
+    }
+  });
 
   loadButterBoard();
 })();

@@ -556,15 +556,15 @@ async function serveTenantPage(res, filePath, username) {
     injection = `
 <!-- snapie-banner -->
 <div style="position:fixed;bottom:0;left:0;right:0;background:#1a1a2e;color:#a8b4c4;text-align:center;padding:10px 20px;font-size:13px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;border-top:1px solid #2a2a4e;">
-  This page is powered by <a href="https://snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">Snapie</a> &mdash;
-  <a href="https://snapie.io/#butter-board" style="color:#58a6ff;text-decoration:none;">Support us with HP delegation!</a>
+  Powered by <a href="https://myownpage.snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">Mantequilla Soft</a> &amp; <a href="https://myownpage.snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">Snapie</a> &mdash;
+  <a href="https://myownpage.snapie.io/#butter-board" style="color:#58a6ff;text-decoration:none;">Support us with HP delegation!</a>
 </div>`;
   } else {
     const label = TIER_LABELS[tier] || tier;
     injection = `
 <!-- snapie-badge -->
 <div style="position:fixed;bottom:0;right:20px;background:#1a1a2e;color:#a8b4c4;padding:6px 16px;font-size:11px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;z-index:99999;border-radius:8px 8px 0 0;border:1px solid #2a2a4e;border-bottom:none;">
-  Powered by <a href="https://snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">@${DELEGATION_TARGET}</a> &mdash; ${label} Member
+  Powered by <a href="https://myownpage.snapie.io/#butter-board" style="color:#e84142;text-decoration:none;font-weight:600;">Mantequilla Soft</a> &amp; <a href="https://myownpage.snapie.io" style="color:#e84142;text-decoration:none;font-weight:600;">Snapie</a> &mdash; ${label} Member
 </div>`;
   }
 
