@@ -531,6 +531,27 @@
         .bb-tier { padding: 8px 16px; border-radius: 8px; font-size: 12px; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); }
         .bb-tier span { font-weight: 700; }
 
+        /* ---- PAGINATION ---- */
+        .pagination { display: flex; align-items: center; justify-content: center; gap: 16px; margin-top: 24px; }
+        .pagination button { padding: 8px 18px; border-radius: 8px; background: var(--surface); border: 1px solid var(--border); color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .pagination button:hover:not(:disabled) { border-color: var(--accent); background: var(--accent-glow); }
+        .pagination button:disabled { opacity: 0.35; cursor: default; }
+        .pagination .page-info { font-size: 13px; color: var(--text-muted); }
+
+        /* ---- HIVEAN SITES ---- */
+        .hivean-sites { padding: 100px 20px; max-width: 1000px; margin: 0 auto; }
+        .hivean-sites h2 { font-size: 42px; font-weight: 800; letter-spacing: -1.5px; text-align: center; margin-bottom: 12px; }
+        .hivean-sites .hs-subtitle { color: var(--text-muted); font-size: 18px; text-align: center; margin-bottom: 48px; }
+        .hs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+        .hs-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 24px; display: flex; align-items: center; gap: 16px; text-decoration: none; color: var(--text); transition: all 0.2s; }
+        .hs-card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.3); }
+        .hs-avatar { width: 48px; height: 48px; border-radius: 50%; border: 2px solid var(--border); object-fit: cover; flex-shrink: 0; }
+        .hs-info { flex: 1; min-width: 0; }
+        .hs-title { font-weight: 700; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .hs-user { font-size: 13px; color: var(--text-muted); margin-top: 2px; }
+        .hs-arrow { color: var(--text-muted); font-size: 18px; flex-shrink: 0; }
+        .hs-empty { text-align: center; color: var(--text-muted); padding: 40px 20px; font-size: 16px; grid-column: 1 / -1; }
+
         /* ---- RESPONSIVE ---- */
         @media (max-width: 900px) {
             .hero h1 { font-size: 42px; }
@@ -538,15 +559,17 @@
             .templates-scroll { grid-template-columns: repeat(2, 1fr); }
             .nav { padding: 16px 20px; }
             .nav-links { gap: 16px; }
+            .hs-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @media (max-width: 600px) {
             .hero h1 { font-size: 32px; }
             .hero p { font-size: 16px; }
-            .features-header h2, .templates-header h2, .how-section h2, .pricing h2, .butter-board h2 { font-size: 28px; }
+            .features-header h2, .templates-header h2, .how-section h2, .pricing h2, .butter-board h2, .hivean-sites h2 { font-size: 28px; }
             .bb-stats { flex-direction: column; align-items: center; }
             .bb-row { gap: 10px; padding: 10px 14px; }
             .bb-hp { font-size: 13px; }
             .templates-scroll { grid-template-columns: repeat(2, 1fr); }
+            .hs-grid { grid-template-columns: 1fr; }
             .browser-body { height: 250px; }
             .browser-body h2 { font-size: 24px; }
             .nav-links a:not(.nav-cta) { display: none; }
@@ -804,6 +827,11 @@
         <div class="bb-list" id="bbList">
             <div class="bb-empty">Loading supporters...</div>
         </div>
+        <div class="pagination" id="bbPagination" style="display:none;">
+            <button id="bbPrev" disabled>&larr; Prev</button>
+            <span class="page-info" id="bbPageInfo"></span>
+            <button id="bbNext" disabled>Next &rarr;</button>
+        </div>
 
         <div style="text-align:center;">
             <p style="color:var(--text); font-size:16px; font-weight:600; margin-bottom:4px;">Delegate to <strong id="bbTargetBoard">@...</strong></p>
@@ -816,6 +844,20 @@
                 <a href="#" class="bb-delegate-pick bb-delegate-pick-custom" data-hp="custom"><span class="bb-pick-hp">Custom</span><span class="bb-pick-tier">Any amount</span></a>
             </div>
             <p style="color:var(--text-muted); font-size:12px; margin-top:16px;">Opens Hive Keychain &mdash; your HP stays in your account, delegation is reversible anytime</p>
+        </div>
+    </section>
+
+    <!-- HIVEAN SITES -->
+    <section class="hivean-sites" id="hivean-sites">
+        <h2>Sites Built by Hiveans</h2>
+        <p class="hs-subtitle">Discover what people are building on Snapie</p>
+        <div class="hs-grid" id="hsGrid">
+            <div class="hs-empty">Loading sites...</div>
+        </div>
+        <div class="pagination" id="hsPagination" style="display:none;">
+            <button id="hsPrev" disabled>&larr; Prev</button>
+            <span class="page-info" id="hsPageInfo"></span>
+            <button id="hsNext" disabled>Next &rarr;</button>
         </div>
     </section>
 
@@ -835,11 +877,17 @@
 (function() {
   var badgeClasses = { lord: 'bb-badge-lord', supreme: 'bb-badge-supreme', butterist: 'bb-badge-butterist', butterino: 'bb-badge-butterino' };
   var delegationTarget = '';
+  var bbPage = 1, bbTotalPages = 1;
+  var hsPage = 1, hsTotalPages = 1;
 
-  async function loadButterBoard() {
+  async function loadButterBoard(page) {
+    page = page || 1;
     try {
-      var resp = await fetch('/api/butter-board');
+      var resp = await fetch('/api/butter-board?page=' + page + '&limit=10');
       var data = await resp.json();
+
+      bbPage = data.currentPage;
+      bbTotalPages = data.totalPages;
 
       delegationTarget = data.delegationTarget || '';
       var atTarget = '@' + delegationTarget;
@@ -852,23 +900,86 @@
       var list = document.getElementById('bbList');
       if (!data.delegators || data.delegators.length === 0) {
         list.innerHTML = '<div class="bb-empty">No supporters yet. Be the first!</div>';
+        document.getElementById('bbPagination').style.display = 'none';
         return;
       }
 
+      var offset = (bbPage - 1) * 10;
       list.innerHTML = data.delegators.map(function(d, i) {
         return '<div class="bb-row">' +
-          '<span class="bb-rank">#' + (i + 1) + '</span>' +
+          '<span class="bb-rank">#' + (offset + i + 1) + '</span>' +
           '<img class="bb-avatar" src="https://images.hive.blog/u/' + d.username + '/avatar/small" alt="@' + d.username + '" onerror="this.style.display=\'none\'">' +
           '<span class="bb-name">@' + d.username + '</span>' +
           '<span class="bb-badge ' + (badgeClasses[d.tier] || '') + '">' + d.tierLabel + '</span>' +
           '<span class="bb-hp">' + Math.round(d.hp).toLocaleString() + ' HP</span>' +
         '</div>';
       }).join('');
+
+      // Pagination controls
+      var pag = document.getElementById('bbPagination');
+      if (bbTotalPages > 1) {
+        pag.style.display = 'flex';
+        document.getElementById('bbPageInfo').textContent = 'Page ' + bbPage + ' of ' + bbTotalPages;
+        document.getElementById('bbPrev').disabled = bbPage <= 1;
+        document.getElementById('bbNext').disabled = bbPage >= bbTotalPages;
+      } else {
+        pag.style.display = 'none';
+      }
     } catch (e) {
       console.error('Butter Board load error:', e);
       document.getElementById('bbList').innerHTML = '<div class="bb-empty">Could not load supporters.</div>';
     }
   }
+
+  document.getElementById('bbPrev').addEventListener('click', function() { if (bbPage > 1) loadButterBoard(bbPage - 1); });
+  document.getElementById('bbNext').addEventListener('click', function() { if (bbPage < bbTotalPages) loadButterBoard(bbPage + 1); });
+
+  async function loadSites(page) {
+    page = page || 1;
+    var grid = document.getElementById('hsGrid');
+    try {
+      var resp = await fetch('/api/sites?page=' + page + '&limit=12');
+      var data = await resp.json();
+
+      hsPage = data.currentPage;
+      hsTotalPages = data.totalPages;
+
+      if (!data.sites || data.sites.length === 0) {
+        grid.innerHTML = '<div class="hs-empty">No sites yet. Be the first to build yours!</div>';
+        document.getElementById('hsPagination').style.display = 'none';
+        return;
+      }
+
+      var isLocal = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+      grid.innerHTML = data.sites.map(function(s) {
+        var url = isLocal ? '/site/' + s.username + '/' : 'https://' + s.username + '.snapie.io';
+        return '<a class="hs-card" href="' + url + '" target="_blank">' +
+          '<img class="hs-avatar" src="https://images.hive.blog/u/' + s.username + '/avatar/small" alt="@' + s.username + '" onerror="this.style.display=\'none\'">' +
+          '<div class="hs-info">' +
+            '<div class="hs-title">' + (s.siteTitle || 'My Own Page') + '</div>' +
+            '<div class="hs-user">@' + s.username + '</div>' +
+          '</div>' +
+          '<span class="hs-arrow">&rarr;</span>' +
+        '</a>';
+      }).join('');
+
+      var pag = document.getElementById('hsPagination');
+      if (hsTotalPages > 1) {
+        pag.style.display = 'flex';
+        document.getElementById('hsPageInfo').textContent = 'Page ' + hsPage + ' of ' + hsTotalPages;
+        document.getElementById('hsPrev').disabled = hsPage <= 1;
+        document.getElementById('hsNext').disabled = hsPage >= hsTotalPages;
+      } else {
+        pag.style.display = 'none';
+      }
+    } catch (e) {
+      console.error('Sites load error:', e);
+      grid.innerHTML = '<div class="hs-empty">Could not load sites.</div>';
+    }
+  }
+
+  document.getElementById('hsPrev').addEventListener('click', function() { if (hsPage > 1) loadSites(hsPage - 1); });
+  document.getElementById('hsNext').addEventListener('click', function() { if (hsPage < hsTotalPages) loadSites(hsPage + 1); });
 
   function triggerDelegation(hp) {
     if (!delegationTarget) return;
@@ -902,6 +1013,7 @@
   });
 
   loadButterBoard();
+  loadSites();
 })();
 </script>
 </body>

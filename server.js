@@ -801,9 +801,18 @@ app.post('/api/v1/message/', async (req, res) => {
 // ==================== BUTTER BOARD API ====================
 
 app.get('/api/butter-board', (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 10));
+  const offset = (page - 1) * limit;
+
+  // Total stats from ALL delegators
+  const stats = db.prepare(
+    "SELECT COUNT(*) as total, COALESCE(SUM(hp), 0) as totalHP, MAX(last_checked) as lastSync FROM delegations WHERE tier != 'free'"
+  ).get();
+
   const delegators = db.prepare(
-    "SELECT delegator, hp, tier, last_checked FROM delegations WHERE tier != 'free' ORDER BY hp DESC"
-  ).all();
+    "SELECT delegator, hp, tier, last_checked FROM delegations WHERE tier != 'free' ORDER BY hp DESC LIMIT ? OFFSET ?"
+  ).all(limit, offset);
 
   const tierLabels = {
     lord: 'Butterist Lord',
@@ -812,9 +821,6 @@ app.get('/api/butter-board', (req, res) => {
     butterino: 'Butterino'
   };
 
-  const totalHP = delegators.reduce((sum, d) => sum + d.hp, 0);
-  const lastSync = delegators.length > 0 ? delegators[0].last_checked : null;
-
   res.json({
     delegators: delegators.map(d => ({
       username: d.delegator,
@@ -822,10 +828,34 @@ app.get('/api/butter-board', (req, res) => {
       tier: d.tier,
       tierLabel: tierLabels[d.tier] || d.tier
     })),
-    totalHP,
-    totalDelegators: delegators.length,
+    totalHP: stats.totalHP,
+    totalDelegators: stats.total,
+    totalPages: Math.ceil(stats.total / limit),
+    currentPage: page,
     delegationTarget: DELEGATION_TARGET,
-    lastSync
+    lastSync: stats.lastSync
+  });
+});
+
+app.get('/api/sites', (req, res) => {
+  const page = Math.max(1, parseInt(req.query.page) || 1);
+  const limit = Math.min(50, Math.max(1, parseInt(req.query.limit) || 12));
+  const offset = (page - 1) * limit;
+
+  const total = db.prepare('SELECT COUNT(*) as count FROM users').get().count;
+  const sites = db.prepare(
+    'SELECT username, site_title, created_at FROM users ORDER BY created_at DESC LIMIT ? OFFSET ?'
+  ).all(limit, offset);
+
+  res.json({
+    sites: sites.map(s => ({
+      username: s.username,
+      siteTitle: s.site_title || 'My Own Page',
+      createdAt: s.created_at
+    })),
+    totalSites: total,
+    totalPages: Math.ceil(total / limit),
+    currentPage: page
   });
 });
 
