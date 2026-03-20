@@ -1,0 +1,1277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Manager — Snapie</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f5f5;
+        }
+
+        .header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            text-decoration: none;
+            display: inline-block;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+        }
+
+        .btn-secondary {
+            background: #e0e0e0;
+            color: #333;
+        }
+
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 13px;
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .section {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .section h2 {
+            font-size: 20px;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        /* Tab Bar */
+        .tab-bar {
+            display: flex;
+            gap: 0;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 500;
+            color: #888;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn:hover {
+            color: #333;
+        }
+
+        .tab-btn.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Products Top Bar */
+        .products-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            padding: 10px 14px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+        }
+
+        /* Product Grid */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1024px) {
+            .products-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .products-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Product Card */
+        .product-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            transition: all 0.3s;
+            border: 2px solid #e0e0e0;
+            position: relative;
+        }
+
+        .product-card:hover {
+            border-color: #667eea;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+        }
+
+        .product-image {
+            width: 100%;
+            aspect-ratio: 4/3;
+            object-fit: cover;
+            display: block;
+            background: #f0f0f0;
+        }
+
+        .product-image-placeholder {
+            width: 100%;
+            aspect-ratio: 4/3;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ccc;
+            font-size: 48px;
+        }
+
+        .product-info {
+            padding: 16px;
+        }
+
+        .product-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .product-price {
+            display: inline-block;
+            background: #ecfdf5;
+            color: #10b981;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .product-category {
+            display: inline-block;
+            background: #f3f4f6;
+            color: #6b7280;
+            padding: 2px 8px;
+            border-radius: 8px;
+            font-size: 12px;
+            margin-left: 6px;
+        }
+
+        .product-status {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .product-status.active {
+            background: #10b981;
+        }
+
+        .product-status.inactive {
+            background: #9ca3af;
+        }
+
+        .product-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            padding: 0 16px 16px;
+        }
+
+        .btn-icon {
+            padding: 6px 12px;
+            font-size: 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-icon-edit {
+            background: #eff6ff;
+            color: #667eea;
+        }
+
+        .btn-icon-edit:hover {
+            background: #dbeafe;
+        }
+
+        .btn-icon-delete {
+            background: #fef2f2;
+            color: #ef4444;
+        }
+
+        .btn-icon-delete:hover {
+            background: #fee2e2;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+        }
+
+        .empty-state-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        /* Enable Shop State */
+        .enable-shop {
+            text-align: center;
+            padding: 80px 20px;
+        }
+
+        .enable-shop-icon {
+            font-size: 72px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+        }
+
+        .enable-shop h2 {
+            font-size: 24px;
+            color: #333;
+            margin-bottom: 12px;
+        }
+
+        .enable-shop p {
+            color: #666;
+            font-size: 16px;
+            margin-bottom: 28px;
+            max-width: 400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .modal-content h2 {
+            margin-bottom: 20px;
+            font-size: 20px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 6px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        /* Image Upload */
+        .image-upload-row {
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .image-upload-row input[type="text"] {
+            flex: 1;
+        }
+
+        .btn-upload {
+            padding: 10px 16px;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+
+        .image-preview {
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 200px;
+        }
+
+        .image-preview img {
+            width: 100%;
+            max-height: 200px;
+            object-fit: cover;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* Checkbox toggle */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toggle-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .toggle-row label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        /* Settings Tab */
+        .settings-form {
+            max-width: 600px;
+        }
+
+        .settings-form .form-group input,
+        .settings-form .form-group textarea {
+            max-width: 100%;
+        }
+
+        /* Categories Management */
+        .categories-chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .category-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #f3f4f6;
+            color: #374151;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 13px;
+        }
+
+        .category-chip button {
+            background: none;
+            border: none;
+            color: #9ca3af;
+            cursor: pointer;
+            font-size: 16px;
+            line-height: 1;
+            padding: 0;
+            transition: color 0.2s;
+        }
+
+        .category-chip button:hover {
+            color: #ef4444;
+        }
+
+        .add-category-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .add-category-row input {
+            flex: 1;
+            max-width: 300px;
+        }
+
+        /* Banner Preview */
+        .banner-preview {
+            margin-top: 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            max-height: 150px;
+        }
+
+        .banner-preview img {
+            width: 100%;
+            max-height: 150px;
+            object-fit: cover;
+            display: block;
+            border-radius: 8px;
+        }
+
+        /* Footer */
+        .footer-note {
+            text-align: center;
+            color: #aaa;
+            font-size: 13px;
+            padding: 20px;
+            margin-top: 10px;
+        }
+
+        /* Loading */
+        .loading {
+            text-align: center;
+            padding: 60px 20px;
+            color: #888;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div style="display:flex; align-items:center; gap:14px;">
+            <img id="headerAvatar" src="" alt="" style="width:36px; height:36px; border-radius:50%; object-fit:cover; display:none; border:2px solid #e0e0e0;">
+            <div>
+                <h1>Store Manager</h1>
+                <span id="headerUsername" style="color:#999; font-size:14px;"></span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <a href="/admin/dashboard" class="btn btn-secondary">Back to Dashboard</a>
+            <a href="#" id="viewShopLink" class="btn btn-secondary" target="_blank">View Shop</a>
+            <button onclick="logout()" class="btn btn-secondary">Logout</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container" id="mainContent" style="display:none;">
+        <!-- Tab Bar -->
+        <div class="tab-bar">
+            <button class="tab-btn active" onclick="switchTab('products')">Products</button>
+            <button class="tab-btn" onclick="switchTab('settings')">Settings</button>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="tab-products" class="tab-content active">
+            <div class="products-toolbar">
+                <button onclick="openProductModal()" class="btn btn-primary">+ Add Product</button>
+                <select id="categoryFilter" class="filter-select" onchange="filterProducts()">
+                    <option value="">All Categories</option>
+                </select>
+            </div>
+            <div id="productsGrid" class="products-grid">
+                <!-- Products loaded by JS -->
+            </div>
+            <div id="productsEmpty" class="empty-state" style="display:none;">
+                <div class="empty-state-icon">🛍️</div>
+                <p>No products yet. Add your first product!</p>
+                <button onclick="openProductModal()" class="btn btn-primary">+ Add Product</button>
+            </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="tab-settings" class="tab-content">
+            <div class="section">
+                <h2>Store Settings</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="businessName">Business Name</label>
+                        <input type="text" id="businessName" placeholder="My Awesome Store">
+                    </div>
+                    <div class="form-group">
+                        <label for="hiveAccount">Hive Receiving Account</label>
+                        <input type="text" id="hiveAccount" placeholder="your-hive-username">
+                    </div>
+                    <div class="form-group">
+                        <label for="bannerImage">Banner Image URL</label>
+                        <div class="image-upload-row">
+                            <input type="text" id="bannerImage" placeholder="/uploads/banner.jpg" oninput="previewBanner()">
+                            <button type="button" class="btn btn-secondary btn-upload" onclick="uploadBanner()">Upload Image</button>
+                        </div>
+                        <input type="file" id="bannerFileInput" accept="image/*" style="display:none;" onchange="handleBannerUpload(event)">
+                        <div id="bannerPreview" class="banner-preview" style="display:none;">
+                            <img id="bannerPreviewImg" src="" alt="Banner preview">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Categories</label>
+                        <div id="categoriesChips" class="categories-chips">
+                            <!-- Category chips rendered by JS -->
+                        </div>
+                        <div class="add-category-row">
+                            <input type="text" id="newCategoryInput" placeholder="New category name" onkeydown="if(event.key==='Enter'){event.preventDefault();addCategory();}">
+                            <button type="button" class="btn btn-secondary btn-small" onclick="addCategory()">Add</button>
+                        </div>
+                    </div>
+                    <button onclick="saveSettings()" class="btn btn-primary">Save Settings</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-note">(Bitcoin Lightning config — coming soon)</div>
+    </div>
+
+    <!-- Enable Shop State -->
+    <div class="container" id="enableShopState" style="display:none;">
+        <div class="section enable-shop">
+            <div class="enable-shop-icon">🏪</div>
+            <h2>Shop not enabled</h2>
+            <p>Enable your shop to start selling products with Hive payments.</p>
+            <button onclick="enableShop()" class="btn btn-primary" id="enableShopBtn">Enable Shop</button>
+        </div>
+    </div>
+
+    <!-- Loading State -->
+    <div class="container" id="loadingState">
+        <div class="loading">Loading store data...</div>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <h2 id="productModalTitle">Add Product</h2>
+            <form id="productForm" onsubmit="saveProduct(event)">
+                <input type="hidden" id="productId" value="">
+                <div class="form-group">
+                    <label for="productName">Name</label>
+                    <input type="text" id="productName" required placeholder="Product name">
+                </div>
+                <div class="form-group">
+                    <label for="productCategory">Category</label>
+                    <select id="productCategory">
+                        <option value="">No category</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="productPrice">Price (HBD)</label>
+                    <input type="number" id="productPrice" required step="0.001" min="0" placeholder="0.000">
+                </div>
+                <div class="form-group">
+                    <label for="productDescription">Description</label>
+                    <textarea id="productDescription" placeholder="Describe your product..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="productImage">Image URL</label>
+                    <div class="image-upload-row">
+                        <input type="text" id="productImage" placeholder="/uploads/product.jpg" oninput="previewProductImage()">
+                        <button type="button" class="btn btn-secondary btn-upload" onclick="uploadProductImage()">Upload Image</button>
+                    </div>
+                    <input type="file" id="productFileInput" accept="image/*" style="display:none;" onchange="handleProductImageUpload(event)">
+                    <div id="productImagePreview" class="image-preview" style="display:none;">
+                        <img id="productPreviewImg" src="" alt="Product preview">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="toggle-row">
+                        <input type="checkbox" id="productActive" checked>
+                        <label for="productActive">Active (visible in shop)</label>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" onclick="closeProductModal()" class="btn btn-secondary">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var currentUser = null;
+        var storeData = null;
+        var products = [];
+        var storeCategories = [];
+
+        // ---- Init ----
+
+        window.addEventListener('DOMContentLoaded', function() {
+            loadUserInfo();
+        });
+
+        async function loadUserInfo() {
+            try {
+                var resp = await fetch('/admin/api/me');
+                if (!resp.ok) {
+                    window.location.href = '/admin/login';
+                    return;
+                }
+                currentUser = await resp.json();
+                document.getElementById('headerUsername').textContent = '@' + currentUser.username;
+                var avatar = document.getElementById('headerAvatar');
+                avatar.src = 'https://images.hive.blog/u/' + currentUser.username + '/avatar/original';
+                avatar.alt = '@' + currentUser.username;
+                avatar.style.display = 'block';
+                document.getElementById('viewShopLink').href = '/site/' + currentUser.username + '/pages/shop';
+                loadStore();
+            } catch (e) {
+                console.error('Auth check failed:', e);
+                window.location.href = '/admin/login';
+            }
+        }
+
+        // ---- Store Loading ----
+
+        async function loadStore() {
+            try {
+                // Ensure shop page exists (idempotent)
+                await fetch('/admin/api/store/enable', { method: 'POST' });
+
+                var resp = await fetch('/admin/api/store');
+                if (resp.status === 404) {
+                    document.getElementById('loadingState').style.display = 'none';
+                    document.getElementById('enableShopState').style.display = 'block';
+                    return;
+                }
+                if (!resp.ok) {
+                    throw new Error('Failed to load store');
+                }
+                storeData = await resp.json();
+                products = storeData.products || [];
+                storeCategories = storeData.settings?.categories || [];
+
+                document.getElementById('loadingState').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'block';
+
+                populateCategoryFilter();
+                renderProducts();
+                populateSettings();
+            } catch (e) {
+                console.error('Error loading store:', e);
+                document.getElementById('loadingState').innerHTML =
+                    '<div class="loading" style="color:#ef4444;">Error loading store data. Please try again.</div>';
+            }
+        }
+
+        async function enableShop() {
+            var btn = document.getElementById('enableShopBtn');
+            btn.disabled = true;
+            btn.textContent = 'Enabling...';
+            try {
+                var resp = await fetch('/admin/api/store/enable', { method: 'POST' });
+                if (resp.ok) {
+                    document.getElementById('enableShopState').style.display = 'none';
+                    loadStore();
+                } else {
+                    var data = await resp.json();
+                    alert(data.error || 'Failed to enable shop');
+                }
+            } catch (e) {
+                alert('Error enabling shop');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Enable Shop';
+            }
+        }
+
+        // ---- Tabs ----
+
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(function(content) {
+                content.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            document.getElementById('tab-' + tabName).classList.add('active');
+        }
+
+        // ---- Products ----
+
+        function populateCategoryFilter() {
+            var select = document.getElementById('categoryFilter');
+            select.innerHTML = '<option value="">All Categories</option>';
+            storeCategories.forEach(function(cat) {
+                var opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+
+            // Also populate the product modal category dropdown
+            populateProductCategorySelect();
+        }
+
+        function populateProductCategorySelect() {
+            var select = document.getElementById('productCategory');
+            select.innerHTML = '<option value="">No category</option>';
+            storeCategories.forEach(function(cat) {
+                var opt = document.createElement('option');
+                opt.value = cat;
+                opt.textContent = cat;
+                select.appendChild(opt);
+            });
+        }
+
+        function filterProducts() {
+            renderProducts();
+        }
+
+        function renderProducts() {
+            var grid = document.getElementById('productsGrid');
+            var empty = document.getElementById('productsEmpty');
+            var filterVal = document.getElementById('categoryFilter').value;
+
+            var filtered = products;
+            if (filterVal) {
+                filtered = products.filter(function(p) {
+                    return p.category === filterVal;
+                });
+            }
+
+            if (filtered.length === 0) {
+                grid.style.display = 'none';
+                empty.style.display = 'block';
+                if (filterVal && products.length > 0) {
+                    empty.querySelector('p').textContent = 'No products in this category.';
+                } else {
+                    empty.querySelector('p').textContent = 'No products yet. Add your first product!';
+                }
+                return;
+            }
+
+            grid.style.display = 'grid';
+            empty.style.display = 'none';
+
+            grid.innerHTML = filtered.map(function(product) {
+                var imageHtml;
+                if (product.image) {
+                    imageHtml = '<img class="product-image" src="' + escapeHtml(product.image) + '" alt="' + escapeHtml(product.name) + '" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'flex\';">'
+                        + '<div class="product-image-placeholder" style="display:none;">📦</div>';
+                } else {
+                    imageHtml = '<div class="product-image-placeholder">📦</div>';
+                }
+
+                var statusClass = product.active !== false ? 'active' : 'inactive';
+                var categoryHtml = product.category
+                    ? '<span class="product-category">' + escapeHtml(product.category) + '</span>'
+                    : '';
+
+                return '<div class="product-card">'
+                    + '<div class="product-status ' + statusClass + '" title="' + (statusClass === 'active' ? 'Active' : 'Inactive') + '"></div>'
+                    + imageHtml
+                    + '<div class="product-info">'
+                    + '<div class="product-name" title="' + escapeHtml(product.name) + '">' + escapeHtml(product.name) + '</div>'
+                    + '<span class="product-price">' + formatPrice(product.price) + ' HBD</span>'
+                    + categoryHtml
+                    + '</div>'
+                    + '<div class="product-actions">'
+                    + '<button class="btn-icon btn-icon-edit" onclick="editProduct(\'' + product.id + '\')">Edit</button>'
+                    + '<button class="btn-icon btn-icon-delete" onclick="deleteProduct(\'' + product.id + '\')">Delete</button>'
+                    + '</div>'
+                    + '</div>';
+            }).join('');
+        }
+
+        function formatPrice(price) {
+            if (price === undefined || price === null) return '0.000';
+            return parseFloat(price).toFixed(3);
+        }
+
+        // ---- Product Modal ----
+
+        function openProductModal(product) {
+            document.getElementById('productModalTitle').textContent = product ? 'Edit Product' : 'Add Product';
+            document.getElementById('productId').value = product ? product.id : '';
+            document.getElementById('productName').value = product ? product.name : '';
+            document.getElementById('productCategory').value = product ? (product.category || '') : '';
+            document.getElementById('productPrice').value = product ? product.price : '';
+            document.getElementById('productDescription').value = product ? (product.description || '') : '';
+            document.getElementById('productImage').value = product ? (product.image || '') : '';
+            document.getElementById('productActive').checked = product ? product.active !== false : true;
+
+            // Update preview
+            previewProductImage();
+
+            populateProductCategorySelect();
+            if (product && product.category) {
+                document.getElementById('productCategory').value = product.category;
+            }
+
+            document.getElementById('productModal').classList.add('show');
+        }
+
+        function closeProductModal() {
+            document.getElementById('productModal').classList.remove('show');
+            document.getElementById('productForm').reset();
+            document.getElementById('productId').value = '';
+            document.getElementById('productImagePreview').style.display = 'none';
+        }
+
+        function editProduct(id) {
+            var product = products.find(function(p) { return p.id === id; });
+            if (product) {
+                openProductModal(product);
+            }
+        }
+
+        async function saveProduct(e) {
+            e.preventDefault();
+
+            var id = document.getElementById('productId').value;
+            var payload = {
+                name: document.getElementById('productName').value.trim(),
+                category: document.getElementById('productCategory').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                description: document.getElementById('productDescription').value.trim(),
+                image: document.getElementById('productImage').value.trim(),
+                active: document.getElementById('productActive').checked
+            };
+
+            if (!payload.name) {
+                alert('Product name is required.');
+                return;
+            }
+            if (isNaN(payload.price) || payload.price < 0) {
+                alert('Please enter a valid price.');
+                return;
+            }
+
+            try {
+                var url, method;
+                if (id) {
+                    url = '/admin/api/store/products/' + id;
+                    method = 'PUT';
+                } else {
+                    url = '/admin/api/store/products';
+                    method = 'POST';
+                }
+
+                var resp = await fetch(url, {
+                    method: method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (resp.ok) {
+                    var data = await resp.json();
+                    if (id) {
+                        var idx = products.findIndex(function(p) { return p.id === id; });
+                        if (idx !== -1) products[idx] = data.product || Object.assign(products[idx], payload);
+                    } else {
+                        products.push(data.product);
+                    }
+                    closeProductModal();
+                    renderProducts();
+                } else {
+                    var errData = await resp.json();
+                    alert(errData.error || 'Failed to save product');
+                }
+            } catch (e) {
+                console.error('Error saving product:', e);
+                alert('Error saving product. Please try again.');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Are you sure you want to delete this product?')) return;
+
+            try {
+                var resp = await fetch('/admin/api/store/products/' + id, { method: 'DELETE' });
+                if (resp.ok) {
+                    products = products.filter(function(p) { return p.id !== id; });
+                    renderProducts();
+                } else {
+                    alert('Failed to delete product');
+                }
+            } catch (e) {
+                alert('Error deleting product');
+            }
+        }
+
+        // ---- Image Upload (via images.hive.blog with fallback) ----
+
+        async function readFileAsArrayBuffer(file) {
+            return new Promise(function(resolve, reject) {
+                var reader = new FileReader();
+                reader.onload = function() { resolve(new Uint8Array(reader.result)); };
+                reader.onerror = function() { reject(reader.error); };
+                reader.readAsArrayBuffer(file);
+            });
+        }
+
+        async function convertHeicToJpeg(file) {
+            // HEIC/HEIF from iOS — convert via canvas before upload
+            if (!/^image\/(heic|heif)$/i.test(file.type) && !/\.heic$/i.test(file.name)) return file;
+            return new Promise(function(resolve, reject) {
+                var img = new Image();
+                var url = URL.createObjectURL(file);
+                img.onload = function() {
+                    var canvas = document.createElement('canvas');
+                    canvas.width = img.naturalWidth;
+                    canvas.height = img.naturalHeight;
+                    canvas.getContext('2d').drawImage(img, 0, 0);
+                    URL.revokeObjectURL(url);
+                    canvas.toBlob(function(blob) {
+                        if (!blob) return reject(new Error('Canvas conversion failed'));
+                        resolve(new File([blob], file.name.replace(/\.heic$/i, '.jpg'), { type: 'image/jpeg' }));
+                    }, 'image/jpeg', 0.9);
+                };
+                img.onerror = function() { URL.revokeObjectURL(url); reject(new Error('Failed to decode image')); };
+                img.src = url;
+            });
+        }
+
+        async function uploadToHive(file, username) {
+            if (!window.hive_keychain) throw new Error('Hive Keychain required');
+
+            var fileBytes = await readFileAsArrayBuffer(file);
+            var prefix = new TextEncoder().encode('ImageSigningChallenge');
+            var challenge = new Uint8Array(prefix.length + fileBytes.length);
+            challenge.set(prefix, 0);
+            challenge.set(fileBytes, prefix.length);
+
+            // Keychain expects JSON stringified Buffer format: {"type":"Buffer","data":[...]}
+            var challengeString = JSON.stringify({ type: 'Buffer', data: Array.from(challenge) });
+
+            var signature = await new Promise(function(resolve, reject) {
+                window.hive_keychain.requestSignBuffer(username, challengeString, 'Posting', function(resp) {
+                    if (resp.success && resp.result) resolve(resp.result);
+                    else reject(new Error(resp.message || 'Signing cancelled'));
+                });
+            });
+
+            var formData = new FormData();
+            formData.append('file', file);
+            var resp = await fetch('https://images.hive.blog/' + username + '/' + signature, {
+                method: 'POST',
+                body: formData
+            });
+            if (!resp.ok) throw new Error('Hive upload failed: ' + resp.status);
+            var data = await resp.json();
+            if (!data.url) throw new Error('No URL in Hive response');
+            return data.url;
+        }
+
+        async function uploadToLocal(file) {
+            var formData = new FormData();
+            formData.append('files', file);
+            var resp = await fetch('/admin/api/upload', { method: 'POST', body: formData });
+            if (!resp.ok) throw new Error('Local upload failed');
+            var data = await resp.json();
+            if (data.files && data.files.length > 0) return data.files[0].url;
+            throw new Error('No URL in local upload response');
+        }
+
+        async function uploadImage(file) {
+            // Convert HEIC to JPEG if needed (iOS devices)
+            file = await convertHeicToJpeg(file);
+            var username = currentUser.username;
+
+            // Try images.hive.blog first, fall back to local upload
+            try {
+                return await uploadToHive(file, username);
+            } catch (e) {
+                console.warn('Hive image upload failed, falling back to local:', e.message);
+                return await uploadToLocal(file);
+            }
+        }
+
+        function uploadProductImage() {
+            document.getElementById('productFileInput').click();
+        }
+
+        async function handleProductImageUpload(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            try {
+                var url = await uploadImage(file);
+                document.getElementById('productImage').value = url;
+                previewProductImage();
+            } catch (e) {
+                alert('Image upload failed. Please try again.');
+            }
+            event.target.value = '';
+        }
+
+        function previewProductImage() {
+            var url = document.getElementById('productImage').value.trim();
+            var preview = document.getElementById('productImagePreview');
+            var img = document.getElementById('productPreviewImg');
+            if (url) {
+                img.src = url;
+                preview.style.display = 'block';
+                img.onerror = function() { preview.style.display = 'none'; };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        function uploadBanner() {
+            document.getElementById('bannerFileInput').click();
+        }
+
+        async function handleBannerUpload(event) {
+            var file = event.target.files[0];
+            if (!file) return;
+            try {
+                var url = await uploadImage(file);
+                document.getElementById('bannerImage').value = url;
+                previewBanner();
+            } catch (e) {
+                alert('Image upload failed. Please try again.');
+            }
+            event.target.value = '';
+        }
+
+        function previewBanner() {
+            var url = document.getElementById('bannerImage').value.trim();
+            var preview = document.getElementById('bannerPreview');
+            var img = document.getElementById('bannerPreviewImg');
+            if (url) {
+                img.src = url;
+                preview.style.display = 'block';
+                img.onerror = function() { preview.style.display = 'none'; };
+            } else {
+                preview.style.display = 'none';
+            }
+        }
+
+        // ---- Settings ----
+
+        function populateSettings() {
+            var settings = storeData.settings || {};
+            document.getElementById('businessName').value = settings.businessName || '';
+            document.getElementById('hiveAccount').value = settings.hiveAccount || currentUser.username;
+            document.getElementById('bannerImage').value = settings.bannerImage || '';
+            previewBanner();
+            renderCategoryChips();
+        }
+
+        function renderCategoryChips() {
+            var container = document.getElementById('categoriesChips');
+            if (storeCategories.length === 0) {
+                container.innerHTML = '<span style="color:#aaa; font-size:13px;">No categories yet</span>';
+                return;
+            }
+            container.innerHTML = storeCategories.map(function(cat) {
+                return '<span class="category-chip">'
+                    + escapeHtml(cat)
+                    + '<button type="button" onclick="removeCategory(\'' + escapeHtml(cat).replace(/'/g, "\\'") + '\')" title="Remove">&times;</button>'
+                    + '</span>';
+            }).join('');
+        }
+
+        function addCategory() {
+            var input = document.getElementById('newCategoryInput');
+            var name = input.value.trim();
+            if (!name) return;
+            if (storeCategories.indexOf(name) !== -1) {
+                alert('Category already exists.');
+                return;
+            }
+            storeCategories.push(name);
+            input.value = '';
+            renderCategoryChips();
+            populateCategoryFilter();
+        }
+
+        function removeCategory(name) {
+            storeCategories = storeCategories.filter(function(c) { return c !== name; });
+            renderCategoryChips();
+            populateCategoryFilter();
+        }
+
+        async function saveSettings() {
+            var payload = {
+                businessName: document.getElementById('businessName').value.trim(),
+                hiveAccount: document.getElementById('hiveAccount').value.trim(),
+                bannerImage: document.getElementById('bannerImage').value.trim(),
+                categories: storeCategories
+            };
+
+            if (!payload.hiveAccount) {
+                alert('Hive Receiving Account is required.');
+                return;
+            }
+
+            try {
+                var resp = await fetch('/admin/api/store/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                if (resp.ok) {
+                    var data = await resp.json();
+                    storeData.settings = data.settings || payload;
+                    storeCategories = payload.categories;
+                    populateCategoryFilter();
+                    alert('Settings saved successfully!');
+                } else {
+                    var errData = await resp.json();
+                    alert(errData.error || 'Failed to save settings');
+                }
+            } catch (e) {
+                console.error('Error saving settings:', e);
+                alert('Error saving settings. Please try again.');
+            }
+        }
+
+        // ---- Utilities ----
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            var div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        }
+
+        async function logout() {
+            await fetch('/admin/api/logout', { method: 'POST' });
+            window.location.href = '/admin/login';
+        }
+
+        // Close modal when clicking outside
+        document.getElementById('productModal').addEventListener('click', function(e) {
+            if (e.target.id === 'productModal') {
+                closeProductModal();
+            }
+        });
+    </script>
+</body>
+</html>

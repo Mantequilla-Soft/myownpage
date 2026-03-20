@@ -29,6 +29,7 @@ const TEMPLATES = [
   { id: 'restaurant', name: 'Restaurant', description: 'Menu, hours & location', icon: '🍽️', color: '#d97706' },
   { id: 'community-dao', name: 'Community / DAO', description: 'Witness, governance & blog', icon: '🏛️', color: '#059669' },
   { id: 'link-in-bio', name: 'Link in Bio', description: 'Avatar & stacked links', icon: '🔗', color: '#7c3aed' },
+  { id: 'shop', name: 'Shop', description: 'Product catalog, cart & checkout', icon: '🛒', color: '#10b981' },
 ];
 
 // ==================== DATABASE SETUP ====================
@@ -285,6 +286,39 @@ async function ensureTenantDirs(username) {
   // subdomain handler will show a "coming soon" placeholder.
 }
 
+// ==================== STORE HELPERS ====================
+
+function getTenantStoreFile(username) {
+  return path.join(TENANTS_DIR, username, 'store.json');
+}
+
+function createDefaultStore(username) {
+  return {
+    settings: {
+      businessName: `@${username}'s Shop`,
+      hiveAccount: username,
+      bannerUrl: '',
+      currency: 'HBD',
+      categories: ['General'],
+      bitcoinLightningEnabled: false,
+      bitcoinLightningConfig: {}
+    },
+    products: []
+  };
+}
+
+async function readStore(username) {
+  const file = getTenantStoreFile(username);
+  if (fsSync.existsSync(file)) {
+    return JSON.parse(await fs.readFile(file, 'utf8'));
+  }
+  return null;
+}
+
+async function writeStore(username, data) {
+  await fs.writeFile(getTenantStoreFile(username), JSON.stringify(data, null, 2));
+}
+
 // Calculate tenant storage usage
 async function calculateStorageUsed(username) {
   const tenantDir = getTenantDir(username);
@@ -459,7 +493,8 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
     siteUrl: `http://${user.username}.${SNAPIE_DOMAIN}`,
     delegationHP: delegation ? delegation.hp : 0,
     delegationTier: tierInfo.tier,
-    delegationTierLabel: tierInfo.label
+    delegationTierLabel: tierInfo.label,
+    shopEnabled: fsSync.existsSync(getTenantStoreFile(req.session.username))
   });
 });
 
@@ -510,6 +545,15 @@ app.post('/admin/api/apply-homepage-template', requireAuth, async (req, res) => 
     }
 
     await fs.writeFile(indexFile, htmlContent);
+
+    // Auto-enable shop if shop template selected
+    if (templateId === 'shop') {
+      const storeFile = getTenantStoreFile(username);
+      if (!fsSync.existsSync(storeFile)) {
+        await writeStore(username, createDefaultStore(username));
+      }
+    }
+
     res.json({ success: true });
   } catch (error) {
     console.error('Error applying homepage template:', error);
@@ -568,6 +612,30 @@ async function serveTenantPage(res, filePath, username) {
 </div>`;
   }
 
+  // Auto-inject Hive component scripts at serve time (for template-created pages)
+  const usesHive = /<hive-/i.test(html);
+  if (usesHive && !html.includes('hive-components-start')) {
+    const usesShop = /<hive-(shop|cart|pay)/i.test(html);
+    let shopScripts = '';
+    if (usesShop) {
+      shopScripts = `\n<script type="module" src="/js/hive-shop.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>`;
+    }
+    const hiveScripts = `<!-- hive-components-start -->
+<script type="importmap">{"imports":{"lit":"https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js","@hiveio/internal":"https://gtg.openhive.network/5bb236/hive-internal.js"}}</script>
+<script type="module" src="https://gtg.openhive.network/5bb236/hive-post.js"></script>
+<script type="module" src="https://gtg.openhive.network/5bb236/hive-witness.js"></script>
+<script type="module" src="https://gtg.openhive.network/5bb236/hive-comments.js"></script>
+<script type="module" src="https://gtg.openhive.network/5bb236/hive-tag.js"></script>
+<script type="module" src="/js/hive-blog.js"></script>${shopScripts}
+<!-- hive-components-end -->`;
+    if (html.includes('</head>')) {
+      html = html.replace('</head>', hiveScripts + '\n</head>');
+    } else {
+      html = hiveScripts + '\n' + html;
+    }
+  }
+
   if (html.includes('</body>')) {
     html = html.replace('</body>', injection + '\n</body>');
   } else {
@@ -605,12 +673,29 @@ app.use((req, res, next) => {
 });
 
 // Serve tenant sites via subdomain
-app.get('*', (req, res, next) => {
+app.get('*', async (req, res, next) => {
   if (!req.tenantUsername) return next();
 
   const username = req.tenantUsername;
   const tenantDir = getTenantDir(username);
   let reqPath = req.path;
+
+  // Public store API
+  if (reqPath === '/api/store') {
+    const store = await readStore(username);
+    if (!store) return res.status(404).json({ error: 'No shop' });
+    return res.json({
+      settings: {
+        businessName: store.settings.businessName,
+        hiveAccount: store.settings.hiveAccount,
+        bannerUrl: store.settings.bannerUrl,
+        currency: store.settings.currency,
+        categories: store.settings.categories,
+        lightningEnabled: store.settings.bitcoinLightningEnabled
+      },
+      products: store.products.filter(p => p.active !== false)
+    });
+  }
 
   // Serve tenant uploads
   if (reqPath.startsWith('/uploads/')) {
@@ -686,6 +771,24 @@ p{color:#5a6a7a;font-size:16px;line-height:1.6}
 
 // ==================== LOCAL DEV: path-based tenant access ====================
 // For local development without subdomains: /site/{username}/
+
+// Local dev store API
+app.get('/site/:username/api/store', async (req, res) => {
+  const username = req.params.username.toLowerCase();
+  const store = await readStore(username);
+  if (!store) return res.status(404).json({ error: 'No shop' });
+  res.json({
+    settings: {
+      businessName: store.settings.businessName,
+      hiveAccount: store.settings.hiveAccount,
+      bannerUrl: store.settings.bannerUrl,
+      currency: store.settings.currency,
+      categories: store.settings.categories,
+      lightningEnabled: store.settings.bitcoinLightningEnabled
+    },
+    products: store.products.filter(p => p.active !== false)
+  });
+});
 
 app.get('/site/:username', (req, res) => {
   const username = req.params.username.toLowerCase();
@@ -886,6 +989,10 @@ app.get('/admin/builder', requireAuth, (req, res) => {
 
 app.get('/admin/media', requireAuth, (req, res) => {
   res.sendFile(path.join(__dirname, 'admin', 'media.html'));
+});
+
+app.get('/admin/store', requireAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin', 'store.html'));
 });
 
 // ==================== ADMIN API (tenant-scoped) ====================
@@ -1126,15 +1233,21 @@ app.post('/admin/api/page-content', requireAuth, async (req, res) => {
 
     // Auto-inject Hive component scripts
     const usesHive = /<hive-/i.test(bodyContent);
+    const usesShop = /<hive-(shop|cart|pay)/i.test(bodyContent);
     cleanHead = cleanHead.replace(/<!-- hive-components-start -->[\s\S]*?<!-- hive-components-end -->\n?/g, '');
     if (usesHive) {
+      let shopScripts = '';
+      if (usesShop) {
+        shopScripts = `\n<script type="module" src="/js/hive-shop.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>`;
+      }
       const hiveScripts = `<!-- hive-components-start -->
 <script type="importmap">{"imports":{"lit":"https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js","@hiveio/internal":"https://gtg.openhive.network/5bb236/hive-internal.js"}}</script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-post.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-witness.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-comments.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-tag.js"></script>
-<script type="module" src="/js/hive-blog.js"></script>
+<script type="module" src="/js/hive-blog.js"></script>${shopScripts}
 <!-- hive-components-end -->`;
       cleanHead += '\n' + hiveScripts;
     }
@@ -1292,6 +1405,106 @@ app.delete('/admin/api/images', requireAuth, async (req, res) => {
     console.error('Error deleting image:', error);
     res.status(500).json({ error: 'Error deleting image' });
   }
+});
+
+// ==================== STORE API ====================
+
+// Get full store data
+app.get('/admin/api/store', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  res.json(store);
+});
+
+// Enable shop (create store.json with defaults)
+app.post('/admin/api/store/enable', requireAuth, async (req, res) => {
+  const username = req.session.username;
+  const storeFile = getTenantStoreFile(username);
+  const alreadyEnabled = fsSync.existsSync(storeFile);
+  if (!alreadyEnabled) {
+    await writeStore(username, createDefaultStore(username));
+  }
+
+  // Auto-create a shop page from the shop template (even if store already existed)
+  const shopPageFile = path.join(getTenantHtmlDir(username), 'shop.html');
+  if (!fsSync.existsSync(shopPageFile)) {
+    const templateFile = path.join(TEMPLATES_DIR, 'shop.html');
+    if (fsSync.existsSync(templateFile)) {
+      let shopHtml = await fs.readFile(templateFile, 'utf8');
+      shopHtml = shopHtml.replace(/\{\{TITLE\}\}/g, 'Shop');
+      shopHtml = shopHtml.replace(/\{\{USERNAME\}\}/g, username);
+      await fs.writeFile(shopPageFile, shopHtml);
+    }
+  }
+
+  res.json({ success: true, message: alreadyEnabled ? 'Already enabled' : 'Enabled' });
+});
+
+// Update store settings
+app.put('/admin/api/store/settings', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  const allowed = ['businessName', 'hiveAccount', 'bannerUrl', 'currency', 'categories', 'bitcoinLightningEnabled', 'bitcoinLightningConfig'];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) {
+      store.settings[key] = req.body[key];
+    }
+  }
+  await writeStore(req.session.username, store);
+  res.json({ success: true, settings: store.settings });
+});
+
+// Get products
+app.get('/admin/api/store/products', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  res.json({ products: store.products });
+});
+
+// Add a product
+app.post('/admin/api/store/products', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  const product = {
+    id: `item-${Date.now()}-${crypto.randomBytes(4).toString('hex')}`,
+    name: req.body.name || 'Untitled Product',
+    category: req.body.category || 'General',
+    price: parseFloat(req.body.price) || 0,
+    image: req.body.image || '',
+    description: req.body.description || '',
+    active: req.body.active !== false,
+    createdAt: new Date().toISOString()
+  };
+  store.products.push(product);
+  await writeStore(req.session.username, store);
+  res.json({ success: true, product });
+});
+
+// Update a product
+app.put('/admin/api/store/products/:id', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  const idx = store.products.findIndex(p => p.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Product not found' });
+  const allowed = ['name', 'category', 'price', 'image', 'description', 'active'];
+  for (const key of allowed) {
+    if (req.body[key] !== undefined) {
+      store.products[idx][key] = key === 'price' ? parseFloat(req.body[key]) : req.body[key];
+    }
+  }
+  await writeStore(req.session.username, store);
+  res.json({ success: true, product: store.products[idx] });
+});
+
+// Delete a product
+app.delete('/admin/api/store/products/:id', requireAuth, async (req, res) => {
+  const store = await readStore(req.session.username);
+  if (!store) return res.status(404).json({ error: 'Shop not enabled' });
+  const idx = store.products.findIndex(p => p.id === req.params.id);
+  if (idx === -1) return res.status(404).json({ error: 'Product not found' });
+  store.products.splice(idx, 1);
+  await writeStore(req.session.username, store);
+  res.json({ success: true });
 });
 
 // Serve tenant uploads for authenticated admin sessions

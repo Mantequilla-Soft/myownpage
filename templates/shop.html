@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{TITLE}}</title>
+    <link href="/css/styles.css" rel="stylesheet">
+    <style>
+.shop-nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 40px;
+    background: #1a1a2e;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+.shop-nav .brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+}
+.shop-nav .brand img {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+.shop-nav .brand span {
+    font-size: 20px;
+    font-weight: 700;
+    color: #ffffff;
+}
+.shop-nav .links { display: flex; gap: 24px; }
+.shop-nav .links a {
+    color: #cbd5e1;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: color 0.2s;
+}
+.shop-nav .links a:hover { color: #10b981; }
+.shop-hero {
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 80px 40px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+}
+.shop-hero-inner {
+    max-width: 700px;
+}
+.shop-hero h1 {
+    font-size: 52px;
+    font-weight: 800;
+    color: #ffffff;
+    line-height: 1.15;
+    margin-bottom: 20px;
+}
+.shop-hero p {
+    font-size: 20px;
+    color: #94a3b8;
+    line-height: 1.6;
+    margin-bottom: 32px;
+}
+.shop-hero .cta {
+    display: inline-block;
+    padding: 16px 48px;
+    background: #10b981;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 8px;
+    font-weight: 700;
+    font-size: 16px;
+    transition: background 0.2s;
+}
+.shop-hero .cta:hover { background: #059669; }
+.shop-catalog {
+    padding: 80px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.shop-catalog h2 {
+    font-size: 32px;
+    text-align: center;
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+.shop-catalog .subtitle {
+    text-align: center;
+    color: #64748b;
+    margin-bottom: 48px;
+    font-size: 16px;
+}
+.shop-about {
+    padding: 80px 20px;
+    background: #f8fafc;
+}
+.shop-about-inner {
+    max-width: 700px;
+    margin: 0 auto;
+    text-align: center;
+}
+.shop-about h2 {
+    font-size: 32px;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+.shop-about p {
+    font-size: 17px;
+    color: #64748b;
+    line-height: 1.8;
+}
+.shop-footer {
+    padding: 40px 20px;
+    text-align: center;
+    background: #1a1a2e;
+    color: #64748b;
+    font-size: 14px;
+}
+.shop-footer a {
+    color: #10b981;
+    text-decoration: none;
+}
+.shop-footer a:hover { text-decoration: underline; }
+.shop-footer .footer-name {
+    color: #cbd5e1;
+    font-weight: 600;
+    font-size: 16px;
+    margin-bottom: 8px;
+}
+@media (max-width: 640px) {
+    .shop-nav { padding: 12px 20px; }
+    .shop-hero { padding: 60px 20px; min-height: 50vh; }
+    .shop-hero h1 { font-size: 36px; }
+    .shop-hero p { font-size: 17px; }
+    .shop-catalog { padding: 60px 16px; }
+}
+    </style>
+</head>
+<body>
+    <nav class="shop-nav">
+        <a href="/" class="brand">
+            <img src="https://images.hive.blog/u/{{USERNAME}}/avatar/original" alt="{{USERNAME}}">
+            <span>{{USERNAME}}</span>
+        </a>
+        <div class="links">
+            <a href="/">Home</a>
+            <a href="#products">Products</a>
+            <a href="#about">About</a>
+            <a href="#contact">Contact</a>
+        </div>
+    </nav>
+
+    <section class="shop-hero">
+        <div class="shop-hero-inner">
+            <h1>{{USERNAME}}'s Shop</h1>
+            <p>Welcome to my shop &mdash; powered by Hive</p>
+            <a href="#products" class="cta">Browse Products</a>
+        </div>
+    </section>
+
+    <section class="shop-catalog" id="products">
+        <h2>Our Products</h2>
+        <p class="subtitle">Browse our latest collection</p>
+        <hive-shop shop="{{USERNAME}}" columns="3" theme="light" show-categories></hive-shop>
+    </section>
+
+    <section class="shop-about" id="about">
+        <div class="shop-about-inner">
+            <h2>About Our Shop</h2>
+            <p>We are passionate about providing quality products to the Hive community. Every purchase is handled securely on the Hive blockchain, ensuring transparent and trustless transactions. Browse our catalog and find something you love.</p>
+        </div>
+    </section>
+
+    <footer class="shop-footer" id="contact">
+        <p class="footer-name">{{USERNAME}}</p>
+        <p>Powered by <a href="https://snapie.io">Snapie</a> &middot; &copy; 2026</p>
+    </footer>
+
+    <hive-cart shop="{{USERNAME}}" theme="light"></hive-cart>
+    <hive-pay shop="{{USERNAME}}" theme="light"></hive-pay>
+</body>
+</html>

@@ -335,6 +335,7 @@
             <div class="quick-actions">
                 <button onclick="showNewPageModal()" class="btn btn-primary">+ New Page</button>
                 <a href="/admin/media" class="btn btn-secondary">📁 Manage Images</a>
+                <span id="shopAction"></span>
                 <button onclick="window.location.reload()" class="btn btn-secondary">🔄 Refresh</button>
             </div>
         </div>
@@ -391,6 +392,14 @@
                 const usedMB = (user.storageUsed / 1024 / 1024).toFixed(1);
                 const limitMB = (user.storageLimit / 1024 / 1024).toFixed(0);
                 document.getElementById('storageUsed').textContent = usedMB + ' / ' + limitMB + ' MB';
+
+                // Shop action button
+                var shopEl = document.getElementById('shopAction');
+                if (user.shopEnabled) {
+                    shopEl.innerHTML = '<a href="/admin/store" class="btn btn-secondary">🛒 Store Manager</a>';
+                } else {
+                    shopEl.innerHTML = '<button onclick="enableShop()" class="btn btn-secondary">🛒 Enable Shop</button>';
+                }
 
                 // Delegation status
                 var delEl = document.getElementById('delegationStatus');
@@ -533,6 +542,23 @@
             }
         }
         
+        async function enableShop() {
+            try {
+                const resp = await fetch('/admin/api/store/enable', { method: 'POST' });
+                if (resp.status === 401) {
+                    window.location.href = '/admin/login';
+                    return;
+                }
+                if (resp.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Failed to enable shop');
+                }
+            } catch (e) {
+                alert('Error enabling shop');
+            }
+        }
+
         async function logout() {
             await fetch('/admin/api/logout', { method: 'POST' });
             window.location.href = '/admin/login';
