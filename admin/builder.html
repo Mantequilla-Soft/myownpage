@@ -567,6 +567,9 @@
 
             <h3>Shop</h3>
             <div class="blocks-grid" id="shopBlocks"></div>
+
+            <h3>Advanced</h3>
+            <div class="blocks-grid" id="advancedBlocks"></div>
         </div>
 
         <!-- CANVAS: The page being built -->
@@ -936,6 +939,171 @@
             });
         });
 
+        // ==================== REGISTER 3SPEAK COMPONENT ====================
+        editor.DomComponents.addType('three-speak', {
+            isComponent: function(el) {
+                if (el.getAttribute && el.getAttribute('data-three-speak') !== null) {
+                    return { type: 'three-speak' };
+                }
+            },
+            model: {
+                defaults: {
+                    tagName: 'div',
+                    draggable: true,
+                    droppable: false,
+                    editable: false,
+                    attributes: { 'data-three-speak': '', 'data-video-url': 'https://3speak.tv/watch?v=threespeak/first-video' }
+                }
+            },
+            view: {
+                onRender: function() {
+                    var el = this.el;
+                    var attrs = this.model.getAttributes();
+                    var url = attrs['data-video-url'] || '';
+                    var match = url.match(/watch\?v=([^/]+)\/(.+)/);
+                    var label = match ? '@' + match[1] + '/' + match[2] : (url || 'No URL set');
+                    el.style.minHeight = '200px';
+                    el.style.border = '2px dashed #e74c3c';
+                    el.style.borderRadius = '8px';
+                    el.style.display = 'flex';
+                    el.style.alignItems = 'center';
+                    el.style.justifyContent = 'center';
+                    el.style.padding = '20px';
+                    el.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+                    el.style.color = '#e74c3c';
+                    el.style.fontFamily = 'monospace';
+                    el.style.fontSize = '14px';
+                    el.innerHTML = '<div style="text-align:center;">' +
+                        '<div style="font-size:36px; margin-bottom:8px;">&#9654;</div>' +
+                        '<div>3Speak Video</div>' +
+                        '<div style="font-size:12px; color:#888; margin-top:6px;">' + label + '</div>' +
+                        '<div style="font-size:11px; color:#666; margin-top:4px;">Renders live on the published page</div>' +
+                        '</div>';
+                }
+            }
+        });
+
+        // ==================== REGISTER CUSTOM CODE COMPONENT ====================
+        editor.DomComponents.addType('custom-code', {
+            isComponent: function(el) {
+                if (el.getAttribute && el.getAttribute('data-custom-code') !== null) {
+                    return { type: 'custom-code' };
+                }
+            },
+            model: {
+                defaults: {
+                    tagName: 'div',
+                    draggable: true,
+                    droppable: false,
+                    editable: false,
+                    attributes: { 'data-custom-code': '' },
+                    'custom-code-content': '<!-- Paste your HTML, iframe, or embed code here -->',
+                    components: [],
+                    traits: [
+                        {
+                            type: 'button',
+                            name: 'edit-code',
+                            label: 'Edit Code',
+                            text: 'Open Code Editor',
+                            command: 'custom-code:edit'
+                        }
+                    ]
+                },
+                init: function() {
+                    // When loading from saved HTML, capture innerHTML as the code content
+                    var comps = this.get('components');
+                    if (comps && comps.length) {
+                        // Build HTML from child components then clear them (we render a placeholder instead)
+                        var tempEl = document.createElement('div');
+                        comps.forEach(function(c) {
+                            if (typeof c === 'string') { tempEl.innerHTML += c; }
+                            else if (c.toHTML) { tempEl.innerHTML += c.toHTML(); }
+                        });
+                        if (tempEl.innerHTML.trim()) {
+                            this.set('custom-code-content', tempEl.innerHTML);
+                        }
+                        this.components().reset();
+                    }
+                },
+                toHTML: function() {
+                    var code = this.get('custom-code-content') || '';
+                    var attrs = this.getAttrToHTML();
+                    var attrStr = '';
+                    for (var key in attrs) {
+                        if (attrs.hasOwnProperty(key)) {
+                            var val = attrs[key];
+                            attrStr += val === '' ? ' ' + key : ' ' + key + '="' + val + '"';
+                        }
+                    }
+                    return '<div' + attrStr + '>' + code + '</div>';
+                }
+            },
+            view: {
+                events: {
+                    dblclick: 'onDblClick'
+                },
+                onDblClick: function() {
+                    this.em.get('Commands').run('custom-code:edit', { component: this.model });
+                },
+                onRender: function() {
+                    var el = this.el;
+                    var code = this.model.get('custom-code-content') || '';
+                    var preview = code.replace(/</g, '&lt;').replace(/>/g, '&gt;');
+                    if (preview.length > 120) preview = preview.substring(0, 120) + '...';
+                    el.style.minHeight = '80px';
+                    el.style.border = '2px dashed #9b59b6';
+                    el.style.borderRadius = '8px';
+                    el.style.display = 'flex';
+                    el.style.alignItems = 'center';
+                    el.style.justifyContent = 'center';
+                    el.style.padding = '20px';
+                    el.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #2d1b3d 100%)';
+                    el.style.color = '#9b59b6';
+                    el.style.fontFamily = 'monospace';
+                    el.style.fontSize = '13px';
+                    el.innerHTML = '<div style="text-align:center;">' +
+                        '<div style="font-size:24px; margin-bottom:8px;">&lt;/&gt;</div>' +
+                        '<div>Custom Code</div>' +
+                        '<div style="font-size:11px; color:#888; margin-top:6px; max-width:300px; word-break:break-all;">' + preview + '</div>' +
+                        '<div style="font-size:11px; color:#666; margin-top:4px;">Double-click to edit code</div>' +
+                        '</div>';
+                }
+            }
+        });
+
+        // Custom Code editor command (modal with textarea)
+        editor.Commands.add('custom-code:edit', {
+            run: function(editor, sender, opts) {
+                var component = opts && opts.component ? opts.component : editor.getSelected();
+                if (!component || component.get('type') !== 'custom-code') return;
+
+                var currentCode = component.get('custom-code-content') || '';
+
+                var modal = editor.Modal;
+                modal.setTitle('Edit Custom Code');
+                var container = document.createElement('div');
+                container.innerHTML = '<div style="padding:10px;">' +
+                    '<p style="color:#999; font-size:13px; margin-bottom:10px;">Paste any HTML, iframe, embed code, or script below. This will render as-is on your published page.</p>' +
+                    '<textarea id="custom-code-textarea" style="width:100%; height:300px; font-family:monospace; font-size:13px; background:#1e1e1e; color:#d4d4d4; border:1px solid #444; border-radius:6px; padding:12px; resize:vertical; tab-size:2;"></textarea>' +
+                    '<div style="text-align:right; margin-top:12px;">' +
+                    '<button id="custom-code-save" style="padding:8px 24px; background:#27ae60; color:white; border:none; border-radius:4px; cursor:pointer; font-size:14px; margin-left:8px;">Save</button>' +
+                    '</div></div>';
+                modal.setContent(container);
+                modal.open();
+
+                var textarea = container.querySelector('#custom-code-textarea');
+                textarea.value = currentCode;
+                setTimeout(function() { textarea.focus(); }, 100);
+
+                container.querySelector('#custom-code-save').addEventListener('click', function() {
+                    component.set('custom-code-content', textarea.value);
+                    component.view.onRender();
+                    hasUnsavedChanges = true;
+                    modal.close();
+                });
+            }
+        });
+
         // ==================== BLOCK DEFINITIONS ====================
 
         var blockDefs = {
@@ -1106,7 +1274,8 @@
                 { label: 'Tag Feed', icon: hiveSvg, content: '<hive-tag tag="photography" posts-per-page="4" theme="light"></hive-tag>' },
                 { label: 'Post Header', icon: hiveSvg, content: '<hive-post-header permlink="@gtg/hello-world" theme="light"></hive-post-header>' },
                 { label: 'Post Content', icon: hiveSvg, content: '<hive-post-content permlink="@gtg/hello-world" theme="light"></hive-post-content>' },
-                { label: 'Post Footer', icon: hiveSvg, content: '<hive-post-footer permlink="@gtg/hello-world" theme="light"></hive-post-footer>' }
+                { label: 'Post Footer', icon: hiveSvg, content: '<hive-post-footer permlink="@gtg/hello-world" theme="light"></hive-post-footer>' },
+                { label: '3Speak Video', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>', content: '<div data-three-speak data-video-url="https://3speak.tv/watch?v=threespeak/first-video" style="width:100%; aspect-ratio:16/9;"></div>' }
             ];
             var hiveGrid = document.getElementById('hiveBlocks');
             hiveBlocks.forEach(function(b, i) {
@@ -1177,6 +1346,42 @@
                 })(blockId, b.content);
 
                 shopGrid.appendChild(el);
+            });
+
+            // Advanced blocks
+            var advancedBlocks = [
+                { label: 'Custom Code', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><polyline points="16,18 22,12 16,6" fill="none" stroke="currentColor" stroke-width="1.5"/><polyline points="8,6 2,12 8,18" fill="none" stroke="currentColor" stroke-width="1.5"/><line x1="14" y1="4" x2="10" y2="20" stroke="currentColor" stroke-width="1.5"/></svg>', content: '<div data-custom-code></div>' }
+            ];
+            var advancedGrid = document.getElementById('advancedBlocks');
+            advancedBlocks.forEach(function(b, i) {
+                var blockId = 'advanced-' + b.label.toLowerCase().replace(/\s+/g, '-');
+                editor.BlockManager.add(blockId, {
+                    label: b.label,
+                    content: b.content,
+                    category: 'Advanced'
+                });
+
+                var el = document.createElement('div');
+                el.className = 'block-item';
+                el.innerHTML = b.icon + '<span>' + b.label + '</span>';
+
+                (function(bid, content) {
+                    var isDragging = false;
+                    el.addEventListener('mousedown', function(e) {
+                        isDragging = false;
+                        var blockObj = editor.BlockManager.get(bid);
+                        if (blockObj && _blockDragStart) {
+                            _blockDragStart(blockObj, e);
+                            isDragging = true;
+                        }
+                    });
+                    el.addEventListener('click', function() {
+                        if (!isDragging) insertAtSelection(content);
+                        isDragging = false;
+                    });
+                })(blockId, b.content);
+
+                advancedGrid.appendChild(el);
             });
         }
 
@@ -1538,6 +1743,8 @@
             else if (tag === 'p') typeLabel = 'Paragraph';
             else if (tag === 'button') typeLabel = 'Button';
             else if (tag.startsWith('hive-')) typeLabel = 'Hive: ' + tag.replace('hive-', '').replace(/-/g, ' ');
+            if (component.get('type') === 'three-speak') typeLabel = '3Speak Video';
+            if (component.get('type') === 'custom-code') typeLabel = 'Custom Code';
 
             // Add a small label showing what's selected
             var typeRow = document.createElement('div');
@@ -1682,6 +1889,18 @@
                 });
             }
 
+            // 3Speak video component
+            if (component.get('type') === 'three-speak') {
+                props.push({ name: 'data-video-url', label: 'Video URL', value: attrs['data-video-url'] || '', placeholder: 'https://3speak.tv/watch?v=author/permlink' });
+                props.push({ name: 'data-autoplay', label: 'Autoplay', value: attrs['data-autoplay'] === 'true', type: 'checkbox' });
+                props.push({ name: 'data-muted', label: 'Muted', value: attrs['data-muted'] === 'true', type: 'checkbox' });
+            }
+
+            // Custom Code component
+            if (component.get('type') === 'custom-code') {
+                props.push({ name: '_edit-code', label: 'Code', type: 'button', buttonText: 'Open Code Editor', command: 'custom-code:edit' });
+            }
+
             // ID (useful for anchor links)
             props.push({ name: 'id', label: 'ID', value: attrs.id || '', placeholder: 'e.g. about-section' });
 
@@ -1816,7 +2035,10 @@
                     checkbox.checked = !!prop.value;
                     checkbox.style.cssText = 'width:auto; margin:0;';
                     checkbox.addEventListener('change', function() {
-                        if (this.checked) {
+                        if (prop.name.startsWith('data-')) {
+                            // Data attributes use string true/false
+                            applyAttribute(component, prop.name, this.checked ? 'true' : 'false');
+                        } else if (this.checked) {
                             applyAttribute(component, prop.name, '');
                         } else {
                             component.removeAttributes(prop.name);
@@ -1843,6 +2065,17 @@
                     });
                     wrapper.appendChild(pickerBtn);
                     row.appendChild(wrapper);
+                } else if (prop.type === 'button') {
+                    var btn = document.createElement('button');
+                    btn.className = 'btn btn-warning';
+                    btn.style.cssText = 'font-size:12px; padding:6px 14px; width:100%;';
+                    btn.textContent = prop.buttonText || 'Edit';
+                    (function(cmd) {
+                        btn.addEventListener('click', function() {
+                            editor.runCommand(cmd, { component: component });
+                        });
+                    })(prop.command);
+                    row.appendChild(btn);
                 } else {
                     var input = document.createElement('input');
                     input.type = 'text';
@@ -1873,9 +2106,10 @@
                     view.el.setAttribute('src', value);
                 }
             }
-            // Re-render Hive component placeholder when attributes change
+            // Re-render Hive / 3Speak component placeholder when attributes change
+            var compType = component.get('type');
             var tagName = component.get('tagName').toLowerCase();
-            if (tagName.startsWith('hive-')) {
+            if (tagName.startsWith('hive-') || compType === 'three-speak') {
                 var view = component.getView();
                 if (view && view.onRender) view.onRender();
             }

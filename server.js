@@ -612,9 +612,29 @@ async function serveTenantPage(res, filePath, username) {
 </div>`;
   }
 
-  // Auto-inject Hive component scripts at serve time (for template-created pages)
-  const usesHive = /<hive-/i.test(html);
-  if (usesHive && !html.includes('hive-components-start')) {
+  // Auto-inject component scripts at serve time (for template-created pages)
+  const usesHive = /<hive-/i.test(html) && !html.includes('hive-components-start');
+  const usesThreeSpeak = /data-three-speak/i.test(html) && !html.includes('threespeak-init-start');
+
+  // Build a single importmap combining all needed bare specifiers
+  if (usesHive || usesThreeSpeak) {
+    const imports = {};
+    if (usesHive) {
+      imports['lit'] = 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+      imports['@hiveio/internal'] = 'https://gtg.openhive.network/5bb236/hive-internal.js';
+    }
+    if (usesThreeSpeak) {
+      imports['hls.js'] = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.mjs';
+    }
+    const importmapTag = `<script type="importmap">${JSON.stringify({ imports })}</script>`;
+    if (html.includes('</head>')) {
+      html = html.replace('</head>', importmapTag + '\n</head>');
+    } else {
+      html = importmapTag + '\n' + html;
+    }
+  }
+
+  if (usesHive) {
     const usesShop = /<hive-(shop|cart|pay)/i.test(html);
     let shopScripts = '';
     if (usesShop) {
@@ -622,7 +642,6 @@ async function serveTenantPage(res, filePath, username) {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>`;
     }
     const hiveScripts = `<!-- hive-components-start -->
-<script type="importmap">{"imports":{"lit":"https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js","@hiveio/internal":"https://gtg.openhive.network/5bb236/hive-internal.js"}}</script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-post.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-witness.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-comments.js"></script>
@@ -633,6 +652,40 @@ async function serveTenantPage(res, filePath, username) {
       html = html.replace('</head>', hiveScripts + '\n</head>');
     } else {
       html = hiveScripts + '\n' + html;
+    }
+  }
+
+  if (usesThreeSpeak) {
+    const threeSpeakScript = `<!-- threespeak-init-start -->
+<script type="module">
+import { Player } from 'https://cdn.jsdelivr.net/npm/@mantequilla-soft/3speak-player@0.3.2/dist/index.js';
+document.querySelectorAll('[data-three-speak]').forEach(function(el) {
+  var url = el.getAttribute('data-video-url') || '';
+  var match = url.match(/watch\\?v=([^/]+)\\/(.+)/);
+  var author = match ? match[1] : el.getAttribute('data-author');
+  var permlink = match ? match[2] : el.getAttribute('data-permlink');
+  if (!author || !permlink) return;
+  var video = document.createElement('video');
+  video.setAttribute('playsinline', '');
+  video.style.width = '100%';
+  video.style.height = '100%';
+  video.style.borderRadius = '8px';
+  video.style.background = '#000';
+  video.controls = true;
+  if (el.getAttribute('data-muted') === 'true') video.muted = true;
+  el.appendChild(video);
+  var player = new Player();
+  player.attach(video);
+  player.load(author + '/' + permlink).then(function() {
+    if (el.getAttribute('data-autoplay') === 'true') player.play();
+  });
+});
+</script>
+<!-- threespeak-init-end -->`;
+    if (html.includes('</body>')) {
+      html = html.replace('</body>', threeSpeakScript + '\n</body>');
+    } else {
+      html += '\n' + threeSpeakScript;
     }
   }
 
@@ -1231,10 +1284,29 @@ app.post('/admin/api/page-content', requireAuth, async (req, res) => {
     let bodyContent = html || '';
     bodyContent = bodyContent.replace(/^<body[^>]*>/i, '').replace(/<\/body>\s*$/i, '');
 
-    // Auto-inject Hive component scripts
+    // Auto-inject component scripts
     const usesHive = /<hive-/i.test(bodyContent);
     const usesShop = /<hive-(shop|cart|pay)/i.test(bodyContent);
+    const usesThreeSpeak = /data-three-speak/i.test(bodyContent);
+
+    // Clean old injections
     cleanHead = cleanHead.replace(/<!-- hive-components-start -->[\s\S]*?<!-- hive-components-end -->\n?/g, '');
+    cleanHead = cleanHead.replace(/<script type="importmap">[\s\S]*?<\/script>\n?/g, '');
+    bodyContent = bodyContent.replace(/<!-- threespeak-init-start -->[\s\S]*?<!-- threespeak-init-end -->\n?/g, '');
+
+    // Build a single importmap combining all needed bare specifiers
+    if (usesHive || usesThreeSpeak) {
+      const imports = {};
+      if (usesHive) {
+        imports['lit'] = 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
+        imports['@hiveio/internal'] = 'https://gtg.openhive.network/5bb236/hive-internal.js';
+      }
+      if (usesThreeSpeak) {
+        imports['hls.js'] = 'https://cdn.jsdelivr.net/npm/hls.js@1/dist/hls.mjs';
+      }
+      cleanHead += `\n<script type="importmap">${JSON.stringify({ imports })}</script>`;
+    }
+
     if (usesHive) {
       let shopScripts = '';
       if (usesShop) {
@@ -1242,7 +1314,6 @@ app.post('/admin/api/page-content', requireAuth, async (req, res) => {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>`;
       }
       const hiveScripts = `<!-- hive-components-start -->
-<script type="importmap">{"imports":{"lit":"https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js","@hiveio/internal":"https://gtg.openhive.network/5bb236/hive-internal.js"}}</script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-post.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-witness.js"></script>
 <script type="module" src="https://gtg.openhive.network/5bb236/hive-comments.js"></script>
@@ -1252,13 +1323,43 @@ app.post('/admin/api/page-content', requireAuth, async (req, res) => {
       cleanHead += '\n' + hiveScripts;
     }
 
+    let threeSpeakScript = '';
+    if (usesThreeSpeak) {
+      threeSpeakScript = `\n<!-- threespeak-init-start -->
+<script type="module">
+import { Player } from 'https://cdn.jsdelivr.net/npm/@mantequilla-soft/3speak-player@0.3.2/dist/index.js';
+document.querySelectorAll('[data-three-speak]').forEach(function(el) {
+  var url = el.getAttribute('data-video-url') || '';
+  var match = url.match(/watch\\?v=([^/]+)\\/(.+)/);
+  var author = match ? match[1] : el.getAttribute('data-author');
+  var permlink = match ? match[2] : el.getAttribute('data-permlink');
+  if (!author || !permlink) return;
+  var video = document.createElement('video');
+  video.setAttribute('playsinline', '');
+  video.style.width = '100%';
+  video.style.height = '100%';
+  video.style.borderRadius = '8px';
+  video.style.background = '#000';
+  video.controls = true;
+  if (el.getAttribute('data-muted') === 'true') video.muted = true;
+  el.appendChild(video);
+  var player = new Player();
+  player.attach(video);
+  player.load(author + '/' + permlink).then(function() {
+    if (el.getAttribute('data-autoplay') === 'true') player.play();
+  });
+});
+</script>
+<!-- threespeak-init-end -->`;
+    }
+
     const newContent = `<!DOCTYPE html>
 <html lang="en">
 <head>
 ${cleanHead}
 </head>
 <body${bodyAttrs}>
-${bodyContent}
+${bodyContent}${threeSpeakScript}
 </body>
 </html>`;
 
