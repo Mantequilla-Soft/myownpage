@@ -983,6 +983,70 @@
             }
         });
 
+        // ==================== REGISTER YOUTUBE VIDEO COMPONENT ====================
+        editor.DomComponents.addType('youtube-video', {
+            isComponent: function(el) {
+                if (el.getAttribute && el.getAttribute('data-youtube') !== null) {
+                    return { type: 'youtube-video' };
+                }
+            },
+            model: {
+                defaults: {
+                    tagName: 'div',
+                    draggable: true,
+                    droppable: false,
+                    editable: false,
+                    attributes: { 'data-youtube': '', 'data-video-url': 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                },
+                toHTML: function() {
+                    var attrs = this.getAttrToHTML();
+                    var url = attrs['data-video-url'] || '';
+                    var embedUrl = url;
+                    // Convert watch URLs to embed URLs
+                    var match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+                    if (match) {
+                        embedUrl = 'https://www.youtube.com/embed/' + match[1];
+                    }
+                    return '<div style="position:relative; padding-bottom:56.25%; height:0;">' +
+                        '<iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" ' +
+                        'src="' + embedUrl + '" allowfullscreen></iframe></div>';
+                }
+            },
+            view: {
+                onRender: function() {
+                    var el = this.el;
+                    var attrs = this.model.getAttributes();
+                    var url = attrs['data-video-url'] || '';
+                    var match = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]+)/);
+                    var videoId = match ? match[1] : '';
+                    var label = videoId || url || 'No URL set';
+                    el.style.minHeight = '200px';
+                    el.style.border = '2px dashed #e74c3c';
+                    el.style.borderRadius = '8px';
+                    el.style.display = 'flex';
+                    el.style.alignItems = 'center';
+                    el.style.justifyContent = 'center';
+                    el.style.padding = '20px';
+                    el.style.background = 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)';
+                    el.style.color = '#e74c3c';
+                    el.style.fontFamily = 'monospace';
+                    el.style.fontSize = '14px';
+                    if (videoId) {
+                        el.innerHTML = '<div style="position:relative; width:100%; padding-bottom:56.25%;">' +
+                            '<iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0; border-radius:6px; pointer-events:none;" ' +
+                            'src="https://www.youtube.com/embed/' + videoId + '" allowfullscreen></iframe></div>';
+                    } else {
+                        el.innerHTML = '<div style="text-align:center;">' +
+                            '<div style="font-size:36px; margin-bottom:8px;">&#9654;</div>' +
+                            '<div>YouTube Video</div>' +
+                            '<div style="font-size:12px; color:#888; margin-top:6px;">' + label + '</div>' +
+                            '<div style="font-size:11px; color:#666; margin-top:4px;">Set the Video URL in the properties panel</div>' +
+                            '</div>';
+                    }
+                }
+            }
+        });
+
         // ==================== REGISTER CUSTOM CODE COMPONENT ====================
         editor.DomComponents.addType('custom-code', {
             isComponent: function(el) {
@@ -1231,7 +1295,7 @@
             var basics = [
                 { label: 'Text', icon: 'T', content: '<div>Insert your text here</div>' },
                 { label: 'Map', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><circle cx="12" cy="10" r="3" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7z" fill="none" stroke="currentColor" stroke-width="1.5"/></svg>', content: '<iframe src="https://maps.google.com/maps?q=New+York&output=embed" style="width:100%; height:300px; border:0;"></iframe>' },
-                { label: 'Video', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>', content: '<div style="position:relative; padding-bottom:56.25%; height:0;"><iframe style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" src="https://www.youtube.com/embed/dQw4w9WgXcQ" allowfullscreen></iframe></div>' }
+                { label: 'Video', icon: '<svg viewBox="0 0 24 24" width="32" height="32"><rect x="2" y="4" width="20" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.5"/><polygon points="10,8 16,12 10,16" fill="currentColor"/></svg>', content: '<div data-youtube data-video-url="https://www.youtube.com/watch?v=dQw4w9WgXcQ" style="width:100%; aspect-ratio:16/9;"></div>' }
             ];
             basics.forEach(function(b, i) {
                 var blockId = 'basic-' + b.label.toLowerCase().replace(/\s+/g, '-');
@@ -1745,6 +1809,7 @@
             else if (tag.startsWith('hive-')) typeLabel = 'Hive: ' + tag.replace('hive-', '').replace(/-/g, ' ');
             if (component.get('type') === 'three-speak') typeLabel = '3Speak Video';
             if (component.get('type') === 'custom-code') typeLabel = 'Custom Code';
+            if (component.get('type') === 'youtube-video') typeLabel = 'YouTube Video';
 
             // Add a small label showing what's selected
             var typeRow = document.createElement('div');
@@ -1894,6 +1959,11 @@
                 props.push({ name: 'data-video-url', label: 'Video URL', value: attrs['data-video-url'] || '', placeholder: 'https://3speak.tv/watch?v=author/permlink' });
                 props.push({ name: 'data-autoplay', label: 'Autoplay', value: attrs['data-autoplay'] === 'true', type: 'checkbox' });
                 props.push({ name: 'data-muted', label: 'Muted', value: attrs['data-muted'] === 'true', type: 'checkbox' });
+            }
+
+            // YouTube video component
+            if (component.get('type') === 'youtube-video') {
+                props.push({ name: 'data-video-url', label: 'Video URL', value: attrs['data-video-url'] || '', placeholder: 'https://www.youtube.com/watch?v=...' });
             }
 
             // Custom Code component
@@ -2109,7 +2179,7 @@
             // Re-render Hive / 3Speak component placeholder when attributes change
             var compType = component.get('type');
             var tagName = component.get('tagName').toLowerCase();
-            if (tagName.startsWith('hive-') || compType === 'three-speak') {
+            if (tagName.startsWith('hive-') || compType === 'three-speak' || compType === 'youtube-video') {
                 var view = component.getView();
                 if (view && view.onRender) view.onRender();
             }
