@@ -592,6 +592,11 @@ const TIER_LABELS = {
 async function serveTenantPage(res, filePath, username) {
   let html = await fs.readFile(filePath, 'utf8');
 
+  // Rewrite /uploads/ paths to the public path-based route so images work
+  // for both subdomain and /site/{user}/ access without requiring auth
+  html = html.replace(/(src|href)=(["'])\/uploads\//g, `$1=$2/site/${username}/uploads/`);
+  html = html.replace(/url\(\s*['"]?\/uploads\//g, `url(/site/${username}/uploads/`);
+
   const delegation = db.prepare('SELECT tier, hp FROM delegations WHERE delegator = ?').get(username);
   const tier = delegation ? delegation.tier : 'free';
 
