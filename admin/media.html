@@ -437,12 +437,12 @@
         
         function displayImages(images) {
             const grid = document.getElementById('imagesGrid');
-            
+
             if (images.length === 0) {
                 grid.innerHTML = '<p style="color: #666;">No images yet. Upload your first image!</p>';
                 return;
             }
-            
+
             grid.innerHTML = images.map(img => `
                 <div class="image-card" onclick='showImageModal(${JSON.stringify(img)})'>
                     <img src="${img.url}" alt="${img.name}">
@@ -450,6 +450,7 @@
                         <div class="image-name">${img.name}</div>
                         <div class="image-actions">
                             <button class="btn btn-primary btn-small" onclick="event.stopPropagation(); copyImageUrl('${img.url}')">📋 Copy</button>
+                            <button class="btn btn-danger btn-small" onclick="event.stopPropagation(); quickDeleteImage(${JSON.stringify(img)}, this)">🗑️ Delete</button>
                         </div>
                     </div>
                 </div>
@@ -497,19 +498,25 @@
         
         async function deleteImage() {
             if (!currentImage) return;
-            
+
             if (!confirm(`Delete ${currentImage.name}?`)) return;
-            
+
             try {
                 const response = await fetch('/admin/api/images', {
                     method: 'DELETE',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ path: currentImage.path })
                 });
-                
+
                 if (response.ok) {
                     closeModal();
-                    loadImages();
+                    // Remove the card from the grid directly rather than refetching
+                    const cards = document.querySelectorAll('.image-card img');
+                    cards.forEach(img => {
+                        if (img.src.endsWith(currentImage.url)) {
+                            img.closest('.image-card').remove();
+                        }
+                    });
                 } else {
                     alert('Error deleting image');
                 }
@@ -526,6 +533,24 @@
             return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
         }
         
+        async function quickDeleteImage(image, btn) {
+            if (!confirm(`Delete ${image.name}?`)) return;
+            try {
+                const response = await fetch('/admin/api/images', {
+                    method: 'DELETE',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ path: image.path })
+                });
+                if (response.ok) {
+                    btn.closest('.image-card').remove();
+                } else {
+                    alert('Error deleting image');
+                }
+            } catch (error) {
+                alert('Error deleting image');
+            }
+        }
+
         // Close modal when clicking outside
         document.getElementById('imageModal').addEventListener('click', (e) => {
             if (e.target.id === 'imageModal') {

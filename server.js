@@ -477,8 +477,7 @@ app.get('/admin/api/me', requireAuth, async (req, res) => {
   const user = db.prepare('SELECT * FROM users WHERE username = ?').get(req.session.username);
   if (!user) return res.status(404).json({ error: 'User not found' });
 
-  const storageUsed = await calculateStorageUsed(req.session.username);
-  db.prepare('UPDATE users SET storage_used = ? WHERE username = ?').run(storageUsed, req.session.username);
+  const storageUsed = user.storage_used || 0;
 
   const delegation = db.prepare('SELECT hp, tier FROM delegations WHERE delegator = ?').get(req.session.username);
   const tierInfo = delegation ? getDelegationTier(delegation.hp) : DELEGATION_TIERS[DELEGATION_TIERS.length - 1];
@@ -592,11 +591,6 @@ const TIER_LABELS = {
 async function serveTenantPage(res, filePath, username) {
   let html = await fs.readFile(filePath, 'utf8');
 
-  // Rewrite /uploads/ paths to the public path-based route so images work
-  // for both subdomain and /site/{user}/ access without requiring auth
-  html = html.replace(/(src|href)=(["'])\/uploads\//g, `$1=$2/site/${username}/uploads/`);
-  html = html.replace(/url\(\s*['"]?\/uploads\//g, `url(/site/${username}/uploads/`);
-
   const delegation = db.prepare('SELECT tier, hp FROM delegations WHERE delegator = ?').get(username);
   const tier = delegation ? delegation.tier : 'free';
 
@@ -700,7 +694,7 @@ document.querySelectorAll('[data-three-speak]').forEach(function(el) {
     html += injection;
   }
 
-  res.set('Cache-Control', 'no-store');
+  res.set('Cache-Control', 'public, max-age=60, stale-while-revalidate=300');
   res.set('Content-Type', 'text/html');
   res.send(html);
 }
@@ -733,6 +727,10 @@ app.use((req, res, next) => {
 // Serve tenant sites via subdomain
 app.get('*', async (req, res, next) => {
   if (!req.tenantUsername) return next();
+
+  // Nginx proxies *.snapie.io/{path} → localhost:6300/site/{username}/{path}.
+  // Any /site/ prefixed path should fall through to the path-based route handlers below.
+  if (req.path.startsWith('/site/')) return next();
 
   const username = req.tenantUsername;
   const tenantDir = getTenantDir(username);
@@ -1431,6 +1429,7 @@ app.post('/admin/api/upload', requireAuth, upload.array('files', 10), async (req
 
     // Check storage limits
     const storageUsed = await calculateStorageUsed(req.session.username);
+    db.prepare('UPDATE users SET storage_used = ? WHERE username = ?').run(storageUsed, req.session.username);
     if (storageUsed > MAX_STORAGE_BYTES) {
       // Delete the files that were just uploaded
       for (const file of req.files) {
